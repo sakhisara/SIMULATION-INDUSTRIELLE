@@ -1,0 +1,668 @@
+[
+    {
+        "id": "f0be47c5445a01d0",
+        "type": "tab",
+        "label": "antigravity",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "6526c2c4c6bd0050",
+        "type": "websocket in",
+        "z": "f0be47c5445a01d0",
+        "name": "",
+        "server": "06c0535a274ab855",
+        "client": "",
+        "x": 300,
+        "y": 260,
+        "wires": [
+            [
+                "3c29be233a050561"
+            ]
+        ]
+    },
+    {
+        "id": "3c29be233a050561",
+        "type": "json",
+        "z": "f0be47c5445a01d0",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 570,
+        "y": 260,
+        "wires": [
+            [
+                "62f60197b4d4b44d",
+                "6dafea1ac563c8a3",
+                "7a3edfc094257fa5",
+                "800aba4a53724c15",
+                "f614cd25eef141f8",
+                "ed625d26d6fbc97b"
+            ]
+        ]
+    },
+    {
+        "id": "62f60197b4d4b44d",
+        "type": "debug",
+        "z": "f0be47c5445a01d0",
+        "name": "debug 9",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 800,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "6dafea1ac563c8a3",
+        "type": "function",
+        "z": "f0be47c5445a01d0",
+        "name": "affichage et gauge",
+        "func": "const d = msg.payload;\n\nreturn [\n    { payload: d.produits_generes },\n    { payload: d.produits_emballes },\n    { payload: d.stock_conforme },\n    { payload: d.rejets },\n    { payload: d.taux_defaut }\n];\nreturn msg;",
+        "outputs": 5,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 360,
+        "wires": [
+            [
+                "fa902c1cb7db8dbe"
+            ],
+            [
+                "219bb9de7c10d8a4"
+            ],
+            [
+                "df127f6c79e2f27f"
+            ],
+            [
+                "a0db518f874e5a6b"
+            ],
+            [
+                "3fe966b12dcf02a5"
+            ]
+        ]
+    },
+    {
+        "id": "fa902c1cb7db8dbe",
+        "type": "ui_text",
+        "z": "f0be47c5445a01d0",
+        "group": "5183beb15e825aa9",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Produits générés",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 970,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "219bb9de7c10d8a4",
+        "type": "ui_text",
+        "z": "f0be47c5445a01d0",
+        "group": "5183beb15e825aa9",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Produits emballés",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 970,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "df127f6c79e2f27f",
+        "type": "ui_text",
+        "z": "f0be47c5445a01d0",
+        "group": "5183beb15e825aa9",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Stock conforme",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 960,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "a0db518f874e5a6b",
+        "type": "ui_text",
+        "z": "f0be47c5445a01d0",
+        "group": "5183beb15e825aa9",
+        "order": 8,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Produits rejetés",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 960,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "3fe966b12dcf02a5",
+        "type": "ui_gauge",
+        "z": "f0be47c5445a01d0",
+        "name": "",
+        "group": "1fd1278a56580e74",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Taux de défaut",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#89dfe1",
+            "#d04e4e",
+            "#a10c0c"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 960,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "7a3edfc094257fa5",
+        "type": "function",
+        "z": "f0be47c5445a01d0",
+        "name": "Alerte et graphique.",
+        "func": "const d = msg.payload;\n\n// 1 : voyant\nconst voyant = {\n    payload: d.alerte === true\n};\n\n// 2 : annonce uniquement au déclenchement de l'alerte\nconst active = d.alerte === true;\nconst precedente = context.get(\"alertePrecedente\") === true;\n\nlet voix = null;\n\nif (active && !precedente) {\n    voix = {\n        payload: \"Attention, taux de défaut élevé : \"\n            + String(d.taux_defaut).replace(\".\", \",\")\n            + \" pour cent.\"\n    };\n}\n\ncontext.set(\"alertePrecedente\", active);\n\n// 3 : deux courbes dans un seul graphique\nconst conformes = {\n    topic: \"Stock conforme\",\n    payload: d.stock_conforme\n};\n\nconst rejets = {\n    topic: \"Rejets\",\n    payload: d.rejets\n};\n\nreturn [voyant, voix, [conformes, rejets]];\nreturn msg;",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 560,
+        "wires": [
+            [
+                "ff5ed1cc73ac24bf"
+            ],
+            [
+                "0400541a9f7abde6"
+            ],
+            [
+                "b99811ee940a0f37"
+            ]
+        ]
+    },
+    {
+        "id": "0400541a9f7abde6",
+        "type": "ui_audio",
+        "z": "f0be47c5445a01d0",
+        "name": "",
+        "group": "5183beb15e825aa9",
+        "voice": "Microsoft Paul - French (France)",
+        "always": "",
+        "x": 780,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "ff5ed1cc73ac24bf",
+        "type": "ui_template",
+        "z": "f0be47c5445a01d0",
+        "group": "1fd1278a56580e74",
+        "name": "",
+        "order": 12,
+        "width": 0,
+        "height": 0,
+        "format": "<style>\n    @keyframes clignoteQualite {\n\n        0%,\n        100% {\n            opacity: 1;\n        }\n\n        50% {\n            opacity: 0.2;\n        }\n    }\n\n    .lampe-qualite {\n        width: 22px;\n        height: 22px;\n        border-radius: 50%;\n        background: #16a34a;\n        margin-right: 12px;\n        flex-shrink: 0;\n    }\n\n    .lampe-qualite.danger {\n        background: #ef4444;\n        animation: clignoteQualite 0.7s infinite;\n    }\n</style>\n\n<div style=\"display:flex;align-items:center;padding:10px;\">\n    <span class=\"lampe-qualite\"\n        ng-class=\"{'danger': msg.payload === true}\">\n  </span>\n\n   <strong>\n    {{msg.payload === true\n    ? 'Attention : taux de défaut élevé'\n    : msg.payload === false\n      ? 'Aucune alerte qualité'\n      : 'En attente de données'}}\n   </strong>\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 740,
+        "y": 460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b99811ee940a0f37",
+        "type": "ui_chart",
+        "z": "f0be47c5445a01d0",
+        "name": "",
+        "group": "3a50409ec2d08604",
+        "order": 13,
+        "width": "6",
+        "height": "6",
+        "label": "Évolution de la production",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "",
+        "removeOlder": "10",
+        "removeOlderPoints": "3000",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#3ce284",
+            "#ec4141",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 750,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "800aba4a53724c15",
+        "type": "function",
+        "z": "f0be47c5445a01d0",
+        "name": "Files d’attente",
+        "func": "const d = msg.payload;\n\nreturn [\n    { payload: d.attente_emballage },\n    { payload: d.attente_controle }\n];\nreturn msg;",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 700,
+        "wires": [
+            [
+                "e67be49ab812b781"
+            ],
+            [
+                "5d01975a9e997bc2"
+            ]
+        ]
+    },
+    {
+        "id": "e67be49ab812b781",
+        "type": "ui_text",
+        "z": "f0be47c5445a01d0",
+        "group": "5183beb15e825aa9",
+        "order": 9,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "En attente — emballage",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 850,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "5d01975a9e997bc2",
+        "type": "ui_text",
+        "z": "f0be47c5445a01d0",
+        "group": "5183beb15e825aa9",
+        "order": 10,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "En attente — contrôle qualité",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 860,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "f614cd25eef141f8",
+        "type": "function",
+        "z": "f0be47c5445a01d0",
+        "name": "function : Historique CSV",
+        "func": "const colonnes = [\n    \"date_heure_UTC\",\n    \"en_marche\",\n    \"produits_generes\",\n    \"produits_emballes\",\n    \"stock_conforme\",\n    \"rejets\",\n    \"taux_defaut\",\n    \"attente_emballage\",\n    \"attente_controle\",\n    \"vitesse_px_s\"\n];\n\nlet lignes = context.get(\"lignesCSV\") || [];\n\n// Le bouton demande le téléchargement.\nif (msg.topic === \"telecharger_csv\") {\n    msg.payload = \"\\uFEFF\" + colonnes.join(\";\") + \"\\r\\n\"\n        + lignes.join(\"\\r\\n\") + \"\\r\\n\";\n\n    msg.filename = \"historique_\" + Date.now() + \".csv\";\n    return msg;\n}\n\n// Réception des données de la simulation.\nconst d = msg.payload;\n\nif (!d || typeof d !== \"object\") return null;\n\nconst maintenant = Date.now();\nconst dernier = context.get(\"dernierEnregistrementCSV\");\n\n// Conserver une mesure toutes les 5 secondes.\nif (dernier !== undefined && maintenant - dernier < 5000) {\n    return null;\n}\n\ncontext.set(\"dernierEnregistrementCSV\", maintenant);\n\nconst valeurs = [\n    new Date(maintenant).toISOString(),\n    ...colonnes.slice(1).map(cle => d[cle])\n];\n\nconst ligne = valeurs.map(valeur =>\n    '\"' + String(valeur ?? \"\").replace(/\"/g, '\"\"') + '\"'\n).join(\";\");\n\nlignes.push(ligne);\ncontext.set(\"lignesCSV\", lignes);\n\n// Aucun téléchargement automatique.\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 880,
+        "wires": [
+            [
+                "ee9d1ad4530f3209"
+            ]
+        ]
+    },
+    {
+        "id": "c1c801be96eeaaa8",
+        "type": "ui_button",
+        "z": "f0be47c5445a01d0",
+        "name": "",
+        "group": "eb134f0f277b9037",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "START",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "topic": "start",
+        "topicType": "str",
+        "x": 380,
+        "y": 980,
+        "wires": [
+            [
+                "ac2e3fafabe75e39"
+            ]
+        ]
+    },
+    {
+        "id": "6e1d243717b1ff86",
+        "type": "ui_button",
+        "z": "f0be47c5445a01d0",
+        "name": "",
+        "group": "eb134f0f277b9037",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "STOP",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "topic": "stop",
+        "topicType": "str",
+        "x": 370,
+        "y": 1060,
+        "wires": [
+            [
+                "ac2e3fafabe75e39"
+            ]
+        ]
+    },
+    {
+        "id": "b7aafdb7f0ee85cd",
+        "type": "ui_slider",
+        "z": "f0be47c5445a01d0",
+        "name": "",
+        "label": "Vitesse du convoyeur",
+        "tooltip": "",
+        "group": "eb134f0f277b9037",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "outs": "all",
+        "topic": "vitesse",
+        "topicType": "str",
+        "min": "30",
+        "max": "250",
+        "step": "5",
+        "className": "",
+        "x": 400,
+        "y": 1120,
+        "wires": [
+            [
+                "ac2e3fafabe75e39"
+            ]
+        ]
+    },
+    {
+        "id": "ac2e3fafabe75e39",
+        "type": "function",
+        "z": "f0be47c5445a01d0",
+        "name": "Envoyer commande",
+        "func": "msg.payload = JSON.stringify({\n    commande: msg.topic,\n    valeur: msg.payload\n});\n\nreturn msg;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 1060,
+        "wires": [
+            [
+                "ea03572ff179bc4d"
+            ]
+        ]
+    },
+    {
+        "id": "ea03572ff179bc4d",
+        "type": "websocket out",
+        "z": "f0be47c5445a01d0",
+        "name": "",
+        "server": "06c0535a274ab855",
+        "client": "",
+        "x": 1140,
+        "y": 1180,
+        "wires": []
+    },
+    {
+        "id": "ed625d26d6fbc97b",
+        "type": "function",
+        "z": "f0be47c5445a01d0",
+        "name": "rejet",
+        "func": "msg.payload = Number(msg.payload.taux_defaut);\nreturn msg;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 250,
+        "y": 620,
+        "wires": [
+            [
+                "c2736efc973993fa"
+            ]
+        ]
+    },
+    {
+        "id": "c2736efc973993fa",
+        "type": "ui_gauge",
+        "z": "f0be47c5445a01d0",
+        "name": "",
+        "group": "98227004499caf0c",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Taux de rejet",
+        "label": "units",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 230,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "ee9d1ad4530f3209",
+        "type": "ui_template",
+        "z": "f0be47c5445a01d0",
+        "group": "cf7ef1821d496357",
+        "name": "",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "format": "<md-button class=\"md-raised md-primary\"\n           ng-click=\"telechargerCSV()\">\n    Télécharger CSV\n</md-button>\n\n<script>\n(function(scope) {\n    let demandeEnCours = null;\n\n    scope.telechargerCSV = function() {\n        demandeEnCours = Date.now() + \"-\" + Math.random();\n\n        scope.send({\n            topic: \"telecharger_csv\",\n            requestId: demandeEnCours\n        });\n    };\n\n    scope.$watch(\"msg\", function(msg) {\n        // Accepter seulement la réponse à notre clic.\n        if (!msg || !demandeEnCours ||\n            msg.requestId !== demandeEnCours ||\n            typeof msg.payload !== \"string\") {\n            return;\n        }\n\n        demandeEnCours = null;\n\n        const fichier = new Blob(\n            [msg.payload],\n            { type: \"text/csv;charset=utf-8;\" }\n        );\n\n        const url = URL.createObjectURL(fichier);\n        const lien = document.createElement(\"a\");\n\n        lien.href = url;\n        lien.download = msg.filename || \"historique.csv\";\n\n        document.body.appendChild(lien);\n        lien.click();\n        lien.remove();\n\n        setTimeout(function() {\n            URL.revokeObjectURL(url);\n        }, 1000);\n    });\n})(scope);\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1000,
+        "y": 880,
+        "wires": [
+            [
+                "f614cd25eef141f8"
+            ]
+        ]
+    },
+    {
+        "id": "06c0535a274ab855",
+        "type": "websocket-listener",
+        "path": "/simulation",
+        "wholemsg": "false"
+    },
+    {
+        "id": "5183beb15e825aa9",
+        "type": "ui_group",
+        "name": "Production",
+        "tab": "48a7fe45ea437125",
+        "order": 1,
+        "disp": true,
+        "width": "12",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "1fd1278a56580e74",
+        "type": "ui_group",
+        "name": "Qualité",
+        "tab": "48a7fe45ea437125",
+        "order": 3,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "3a50409ec2d08604",
+        "type": "ui_group",
+        "name": "Historique",
+        "tab": "48a7fe45ea437125",
+        "order": 5,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "eb134f0f277b9037",
+        "type": "ui_group",
+        "name": "Commandes",
+        "tab": "48a7fe45ea437125",
+        "order": 2,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "98227004499caf0c",
+        "type": "ui_group",
+        "name": "rejet",
+        "tab": "48a7fe45ea437125",
+        "order": 6,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "cf7ef1821d496357",
+        "type": "ui_group",
+        "name": "csv",
+        "tab": "48a7fe45ea437125",
+        "order": 7,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "48a7fe45ea437125",
+        "type": "ui_tab",
+        "name": "Simulation industrielle",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "4cf74f7702c99938",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]

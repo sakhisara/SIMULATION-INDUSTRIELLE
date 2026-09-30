@@ -1,0 +1,3186 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulation Industrielle SVG - Mode Défi &amp; Contrôle Temps Réel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0b0f19;
+      --bg-panel: #131c2e;
+      --bg-card: #182339;
+      --border-color: #273754;
+      --accent-cyan: #06b6d4;
+      --accent-blue: #3b82f6;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-orange: #f97316;
+      --accent-red: #ef4444;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 22px;
+      gap: 14px;
+    }
+
+    /* En-tête */
+    header {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .factory-badge {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #0b0f19;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: var(--accent-red);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .status-indicator.active {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: var(--accent-green);
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    /* Barre de commande principale */
+    .command-bar {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 10px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .button-group {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-start:hover:not(:disabled) {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .btn-stop {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-stop:hover:not(:disabled) {
+      background: linear-gradient(135deg, #f87171, #ef4444);
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .btn-action {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .btn-action:hover {
+      background: #202e4c;
+      color: var(--text-primary);
+      border-color: var(--accent-cyan);
+    }
+
+    .btn-challenge {
+      background: linear-gradient(135deg, #d97706, #b45309);
+      border: 1px solid #f59e0b;
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-challenge:hover {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.6);
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .cadence-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 8px;
+    }
+
+    .cadence-timer {
+      color: var(--accent-amber);
+      font-weight: 700;
+    }
+
+    .mini-progress-bar {
+      width: 65px;
+      height: 6px;
+      background: #273754;
+      border-radius: 3px;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .mini-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-amber);
+      transition: width 0.1s linear;
+    }
+
+    /* Panneau Paramètres en Temps Réel (HTML) */
+    .parameters-panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .parameters-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 4px;
+    }
+
+    .parameters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 14px;
+    }
+
+    .param-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      transition: border-color 0.2s;
+    }
+
+    .param-item:hover {
+      border-color: var(--accent-cyan);
+    }
+
+    .param-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .param-val-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .custom-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #273754;
+      outline: none;
+    }
+
+    .custom-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-cyan);
+      transition: transform 0.1s;
+    }
+
+    .custom-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    /* Simulation Canvas */
+    .simulation-wrapper {
+      position: relative;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    svg#industrial-canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 500px;
+      user-select: none;
+    }
+
+    /* Tableau de Performance */
+    .performance-section {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .performance-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .perf-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+
+    .perf-table th {
+      text-align: left;
+      padding: 8px 12px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .perf-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-primary);
+    }
+
+    .perf-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .badge-ok {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: var(--accent-green);
+    }
+
+    .badge-warning {
+      background: rgba(249, 115, 22, 0.2);
+      border: 1px solid rgba(249, 115, 22, 0.6);
+      color: var(--accent-orange);
+      box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+      animation: pulseAlert 1.5s infinite;
+    }
+
+    .badge-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: var(--accent-red);
+    }
+
+    @keyframes pulseAlert {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.85;
+        transform: scale(1.02);
+      }
+    }
+
+    /* Grille de Télémesure */
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .stat-card.active-stat .stat-value {
+      color: var(--accent-cyan);
+    }
+
+    .stat-card.packed-stat .stat-value {
+      color: #a855f7;
+    }
+
+    .stat-card.passed-stat .stat-value {
+      color: var(--accent-green);
+    }
+
+    .stat-card.rejected-stat .stat-value {
+      color: var(--accent-red);
+    }
+
+    .stat-card.rate-stat .stat-value {
+      color: var(--accent-amber);
+    }
+
+    /* Log terminal */
+    .log-panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .log-content {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+      height: 60px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .log-item {
+      display: flex;
+      gap: 10px;
+    }
+
+    .log-time {
+      color: var(--accent-cyan);
+    }
+
+    .log-msg.spawn {
+      color: var(--accent-blue);
+    }
+
+    .log-msg.pack {
+      color: #c084fc;
+    }
+
+    .log-msg.pass {
+      color: var(--accent-green);
+    }
+
+    .log-msg.reject {
+      color: var(--accent-red);
+    }
+
+    .log-msg.challenge {
+      color: var(--accent-amber);
+      font-weight: 700;
+    }
+
+    .log-msg.bottleneck {
+      color: var(--accent-orange);
+      font-weight: 700;
+    }
+
+    .log-msg.status {
+      color: var(--accent-amber);
+    }
+
+    .log-content::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .log-content::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
+    }
+
+    /* ======================================================== */
+    /* ALERTE VISUELLE ROUGE DYNAMIQUE (TAUX DÉFAUT > 30%)     */
+    /* ======================================================== */
+    .defect-alert-banner {
+      display: none;
+      background: rgba(239, 68, 68, 0.2);
+      border: 2px solid #ef4444;
+      border-radius: 10px;
+      padding: 10px 18px;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .defect-alert-banner.active {
+      display: flex;
+      animation: alertStrobe 0.7s infinite alternate ease-in-out;
+    }
+
+    @keyframes alertStrobe {
+      0% {
+        background: rgba(220, 38, 38, 0.3);
+        border-color: #ef4444;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        color: #fca5a5;
+      }
+
+      100% {
+        background: rgba(239, 68, 68, 0.95);
+        border-color: #ffffff;
+        box-shadow: 0 0 35px rgba(239, 68, 68, 0.95), inset 0 0 20px rgba(255, 255, 255, 0.5);
+        color: #ffffff;
+      }
+    }
+
+    @keyframes beaconPulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.9;
+      }
+
+      50% {
+        transform: scale(1.35);
+        opacity: 0.25;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 0.9;
+      }
+    }
+
+    .svg-alarm-beacon {
+      animation: alertStrobe 0.6s infinite alternate;
+    }
+
+    .svg-alarm-pulse {
+      transform-origin: 835px 58px;
+      animation: beaconPulse 0.9s infinite ease-out;
+    }
+
+    /* ======================================================== */
+    /* MINI-DASHBOARD TEMPS RÉEL DES CAPTEURS INDUSTRIELS       */
+    /* ======================================================== */
+    .mini-dashboard-panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .mini-dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .mini-dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .sensor-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .sensor-card.alert-mode {
+      border-color: #ef4444;
+      animation: alertStrobe 0.8s infinite alternate;
+    }
+
+    .sensor-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sensor-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .tag-presence {
+      background: rgba(2, 132, 199, 0.2);
+      color: #38bdf8;
+      border: 1px solid #0284c7;
+    }
+
+    .tag-counter {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid #10b981;
+    }
+
+    .tag-alarm {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid #ef4444;
+    }
+
+    .sensor-led-indicator {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      display: inline-block;
+      transition: all 0.15s ease;
+    }
+
+    .sensor-led-presence {
+      background: #1e3a5f;
+      box-shadow: none;
+    }
+
+    .sensor-led-presence.active {
+      background: #38bdf8;
+      box-shadow: 0 0 12px #38bdf8, 0 0 22px #0284c7;
+    }
+
+    .sensor-led-counter {
+      background: #064e3b;
+      box-shadow: none;
+    }
+
+    .sensor-led-counter.pulse {
+      background: #10b981;
+      box-shadow: 0 0 14px #10b981, 0 0 24px #34d399;
+    }
+
+    .sensor-main-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .sensor-status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    .sensor-label {
+      color: var(--text-muted);
+    }
+
+    .sensor-val-num {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .sensor-val-state {
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .sensor-bar-bg {
+      width: 100%;
+      height: 4px;
+      background: #273754;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .sensor-bar-fill {
+      height: 100%;
+      transition: width 0.2s ease;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- En-tête de supervision -->
+  <header>
+    <div class="header-title">
+      <div class="factory-badge">ATELIER 4.0</div>
+      <h1>Ligne de Production &bull; Mode Défi SVG &bull; Contrôle Temps Réel</h1>
+    </div>
+    <div class="header-status">
+      <div>HORLOGE : <span id="clock" style="color: var(--accent-cyan)">00:00:00</span></div>
+      <div id="statusBadge" class="status-indicator">
+        <span class="status-dot"></span>
+        <span id="statusText">ARRÊTÉ</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Alerte Visuelle Rouge Dynamique (Taux de défaut > 30%) -->
+  <div id="defectAlertBanner" class="defect-alert-banner">
+    <span style="font-size: 18px;">&#9888;</span>
+    <span>ALERTE QUALITÉ CRITIQUE : TAUX DE DÉFAUT &gt; 30% (<span id="alertBannerVal">0.0%</span>) &bull; DÉVIATION
+      MAJEURE DÉTECTÉE !</span>
+    <span style="font-size: 18px;">&#9888;</span>
+  </div>
+
+  <!-- Barre de commandes principales -->
+  <section class="command-bar">
+    <div class="button-group">
+      <button id="btnStart" class="btn-start" title="Démarrer la ligne">
+        &#9654; START
+      </button>
+      <button id="btnStop" class="btn-stop" title="Arrêter la ligne" disabled>
+        &#9632; STOP
+      </button>
+      <button id="btnChallengeMode" class="btn-challenge"
+        title="Lancer le Mode Défi (100 conformes en moins de 10 minutes)">
+        &#127942; LANCER LE DÉFI (100 / 10 MIN)
+      </button>
+      <button id="btnManualSpawn" class="btn-action" title="Générer immédiatement 1 produit brut">
+        +1 PRODUIT
+      </button>
+      <button id="btnReset" class="btn-action" title="Réinitialiser l'atelier et les statistiques">
+        &#8635; RESET SÉRIE
+      </button>
+      <button id="btnTestAlarm" class="btn-action" style="border-color: #ef4444; color: #f87171;"
+        title="Simuler immédiatement le cas de test Alerte Défaut > 30%">
+        &#9888; TEST DÉFAUT &gt; 30%
+      </button>
+    </div>
+
+    <!-- Statut du générateur 5s -->
+    <div class="cadence-badge">
+      <span>SOURCE (5s) :</span>
+      <div class="mini-progress-bar">
+        <div id="spawnProgressBar" class="mini-progress-fill"></div>
+      </div>
+      <span id="spawnCountdown" class="cadence-timer">5.0s</span>
+    </div>
+  </section>
+
+  <!-- Panneau de modification en temps réel des paramètres (Interface HTML) -->
+  <section class="parameters-panel">
+    <div class="parameters-header">
+      <span>PARAMÈTRES EN TEMPS RÉEL (MODIFIABLES À CHAUD)</span>
+      <span style="font-size: 11px; color: var(--accent-cyan);">RÉPONSE DYNAMIQUE IMMÉDIATE</span>
+    </div>
+
+    <div class="parameters-grid">
+      <!-- 1. Vitesse du convoyeur -->
+      <div class="param-item">
+        <div class="param-title-row">
+          <span>Vitesse convoyeur :</span>
+          <span id="valConveyorSpeed" class="param-val-badge">100 px/s</span>
+        </div>
+        <input type="range" id="inputConveyorSpeed" class="custom-slider" min="30" max="250" step="5" value="100">
+      </div>
+
+      <!-- 2. Temps d'emballage -->
+      <div class="param-item">
+        <div class="param-title-row">
+          <span>Temps d'emballage :</span>
+          <span id="valPackDuration" class="param-val-badge">3.0 s</span>
+        </div>
+        <input type="range" id="inputPackDuration" class="custom-slider" min="0.5" max="8.0" step="0.5" value="3.0">
+      </div>
+
+      <!-- 3. Temps de contrôle -->
+      <div class="param-item">
+        <div class="param-title-row">
+          <span>Temps de contrôle :</span>
+          <span id="valQcDuration" class="param-val-badge">2.0 s</span>
+        </div>
+        <input type="range" id="inputQcDuration" class="custom-slider" min="0.5" max="6.0" step="0.5" value="2.0">
+      </div>
+
+      <!-- 4. Taux de défaut -->
+      <div class="param-item">
+        <div class="param-title-row">
+          <span>Taux de défaut ciblé :</span>
+          <span id="valDefectRate" class="param-val-badge">20 %</span>
+        </div>
+        <input type="range" id="inputDefectRate" class="custom-slider" min="0" max="100" step="5" value="20">
+      </div>
+    </div>
+  </section>
+
+  <!-- Mini-Dashboard Temps Réel des Capteurs Industriels -->
+  <section class="mini-dashboard-panel">
+    <div class="mini-dashboard-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span
+          style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-cyan);"></span>
+        <span>MINI-DASHBOARD CAPTEURS INDUSTRIELS &bull; SUPERVISION SCADA TEMPS RÉEL</span>
+      </div>
+      <span style="font-size: 11px; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace;">BUS DE TERRAIN
+        : SYNCHRONE (100 Hz)</span>
+    </div>
+
+    <div class="mini-dashboard-grid">
+      <!-- Capteur 1 : Présence avant emballage (petit cercle bleu) -->
+      <div class="sensor-card" id="cardSensorPresence">
+        <div class="sensor-card-header">
+          <span class="sensor-tag tag-presence">&#9673; SENS-01 &bull; CELLULE OPTIQUE</span>
+          <span id="dashPresenceLed" class="sensor-led-indicator sensor-led-presence"
+            title="Petit cercle bleu capteur de présence"></span>
+        </div>
+        <div class="sensor-main-title">Capteur Présence Avant Emballage</div>
+        <div class="sensor-status-row">
+          <span class="sensor-label">État du faisceau :</span>
+          <span id="dashPresenceStatus" class="sensor-val-state" style="color: #64748b;">FAISCEAU LIBRE</span>
+        </div>
+        <div class="sensor-status-row">
+          <span class="sensor-label">Passages détectés :</span>
+          <span id="dashPresenceCount" class="sensor-val-num" style="color: #38bdf8;">0</span>
+        </div>
+        <div class="sensor-bar-bg">
+          <div id="dashPresenceBar" class="sensor-bar-fill" style="background: #38bdf8; width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Capteur 2 : Comptage après QC -->
+      <div class="sensor-card" id="cardSensorCount">
+        <div class="sensor-card-header">
+          <span class="sensor-tag tag-counter">&#10003; SENS-02 &bull; COMPTEUR D'IMPULSION</span>
+          <span id="dashCountLed" class="sensor-led-indicator sensor-led-counter"
+            title="Voyant impulsion de comptage"></span>
+        </div>
+        <div class="sensor-main-title">Capteur Comptage Post-Contrôle</div>
+        <div class="sensor-status-row">
+          <span class="sensor-label">Total pièces comptées :</span>
+          <span id="dashSensorCountTotal" class="sensor-val-num" style="color: #10b981;">0</span>
+        </div>
+        <div class="sensor-status-row">
+          <span class="sensor-label">Dernière impulsion :</span>
+          <span id="dashCountPulseStatus" class="sensor-val-state" style="color: #64748b;">EN ATTENTE</span>
+        </div>
+        <div class="sensor-bar-bg">
+          <div id="dashCountBar" class="sensor-bar-fill" style="background: #10b981; width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Moniteur Alerte Qualité (> 30%) -->
+      <div class="sensor-card" id="cardQualityAlarm">
+        <div class="sensor-card-header">
+          <span class="sensor-tag tag-alarm">&#9888; ALARME QUALITÉ (SEUIL 30%)</span>
+          <span id="dashAlarmLed" class="sensor-led-indicator" style="background: #334155;"
+            title="Voyant Alarme Qualité"></span>
+        </div>
+        <div class="sensor-main-title">Surveillance Rejets Critiques</div>
+        <div class="sensor-status-row">
+          <span class="sensor-label">Taux de défaut réel :</span>
+          <span id="dashDefectRateVal" class="sensor-val-num" style="color: #f59e0b;">0.0 %</span>
+        </div>
+        <div class="sensor-status-row">
+          <span class="sensor-label">Statut d'alerte :</span>
+          <span id="dashAlarmStatusText" class="sensor-val-state" style="color: #10b981;">CONFORME (&le; 30%)</span>
+        </div>
+        <div class="sensor-bar-bg">
+          <div id="dashAlarmBar" class="sensor-bar-fill" style="background: #10b981; width: 0%;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Zone de Simulation SVG -->
+  <main class="simulation-wrapper">
+    <svg id="industrial-canvas" viewBox="0 0 1300 500" xmlns="http://www.w3.org/2000/svg">
+      <!-- 1. Arrière-plan quadrillé & repères SCADA -->
+      <line x1="0" y1="80" x2="1300" y2="80" stroke="#182339" stroke-width="1" />
+      <line x1="0" y1="160" x2="1300" y2="160" stroke="#182339" stroke-width="1" />
+      <line x1="0" y1="240" x2="1300" y2="240" stroke="#182339" stroke-width="1" />
+      <line x1="0" y1="320" x2="1300" y2="320" stroke="#182339" stroke-width="1" />
+      <line x1="0" y1="400" x2="1300" y2="400" stroke="#182339" stroke-width="1" />
+
+      <line x1="150" y1="0" x2="150" y2="500" stroke="#182339" stroke-width="1" />
+      <line x1="380" y1="0" x2="380" y2="500" stroke="#182339" stroke-width="1" />
+      <line x1="600" y1="0" x2="600" y2="500" stroke="#182339" stroke-width="1" />
+      <line x1="860" y1="0" x2="860" y2="500" stroke="#182339" stroke-width="1" />
+      <line x1="1100" y1="0" x2="1100" y2="500" stroke="#182339" stroke-width="1" />
+
+      <!-- Ligne de sol d'atelier avec bande de sécurité -->
+      <rect x="0" y="460" width="1300" height="40" fill="#0f172a" />
+      <line x1="0" y1="460" x2="1300" y2="460" stroke="#334155" stroke-width="3" />
+
+      <!-- Hachures de sécurité sous le convoyeur -->
+      <rect x="170" y="464" width="790" height="12" fill="#1e293b" />
+      <line x1="180" y1="476" x2="192" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="220" y1="476" x2="232" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="260" y1="476" x2="272" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="300" y1="476" x2="312" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="340" y1="476" x2="352" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="380" y1="476" x2="392" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="420" y1="476" x2="432" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="460" y1="476" x2="472" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="500" y1="476" x2="512" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="540" y1="476" x2="552" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="580" y1="476" x2="592" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="620" y1="476" x2="632" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="660" y1="476" x2="672" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="700" y1="476" x2="712" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="740" y1="476" x2="752" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="780" y1="476" x2="792" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="820" y1="476" x2="832" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="860" y1="476" x2="872" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="900" y1="476" x2="912" y2="464" stroke="#eab308" stroke-width="3" />
+      <line x1="940" y1="476" x2="952" y2="464" stroke="#eab308" stroke-width="3" />
+
+      <!-- ======================================================== -->
+      <!-- 2. PANNEAU SVG DU MODE DÉFI (CHRONOMÈTRE & PROGRESSION)  -->
+      <!-- ======================================================== -->
+      <!-- Cadre général du Mode Défi en SVG -->
+      <rect x="220" y="8" width="860" height="48" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="2"
+        id="svgChallengeFrame" />
+
+      <!-- Titre et objectif du Défi -->
+      <text x="236" y="27" fill="#f59e0b" font-family="'Rajdhani', sans-serif" font-size="14"
+        font-weight="700">&#127942; MODE DÉFI :</text>
+      <text x="236" y="44" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="9.5">OBJECTIF: 100
+        CONFORMES EN &lt; 10 MIN</text>
+
+      <!-- Barre de progression en SVG -->
+      <rect x="470" y="16" width="370" height="16" rx="4" fill="#090d16" stroke="#273754" stroke-width="1.5" />
+      <!-- Remplissage dynamique de la progression -->
+      <rect id="svgChallengeProgressBar" x="472" y="18" width="0" height="12" rx="3" fill="#10b981" />
+      <!-- Graduations 25%, 50%, 75% -->
+      <line x1="562" y1="16" x2="562" y2="32" stroke="#273754" stroke-width="1" />
+      <line x1="655" y1="16" x2="655" y2="32" stroke="#273754" stroke-width="1" />
+      <line x1="747" y1="16" x2="747" y2="32" stroke="#273754" stroke-width="1" />
+      <!-- Texte de progression SVG -->
+      <text id="svgChallengeProgressText" x="655" y="28" fill="#ffffff" font-family="'JetBrains Mono', monospace"
+        font-size="10" font-weight="700" text-anchor="middle">0 / 100 CONFORMES (0%)</text>
+
+      <!-- Chronomètre dynamique en SVG -->
+      <rect id="svgTimerBox" x="860" y="12" width="135" height="40" rx="6" fill="#090d16" stroke="#f59e0b"
+        stroke-width="1.5" />
+      <circle id="svgTimerDot" cx="878" cy="32" r="5" fill="#f59e0b" />
+      <text id="svgChallengeTimer" x="938" y="37" fill="#f59e0b" font-family="'JetBrains Mono', monospace"
+        font-size="18" font-weight="700" text-anchor="middle">10:00.0</text>
+
+      <!-- Bouton d'action Défi SVG -->
+      <g id="svgBtnResetChallenge" cursor="pointer" opacity="0.9">
+        <rect x="1005" y="14" width="65" height="36" rx="5" fill="#1e293b" stroke="#3b82f6" stroke-width="1" />
+        <text x="1037" y="36" fill="#38bdf8" font-family="'Rajdhani', sans-serif" font-size="11" font-weight="700"
+          text-anchor="middle">RESET &#8635;</text>
+      </g>
+
+      <!-- Titres de flux sous le bandeau défi -->
+      <text x="85" y="68" fill="#64748b" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700"
+        text-anchor="middle">SOURCE (5s)</text>
+      <text x="260" y="68" fill="#64748b" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700"
+        text-anchor="middle">CONVOYEUR 1 &rarr;</text>
+      <text x="470" y="68" fill="#06b6d4" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700"
+        text-anchor="middle" id="svgTitlePack">POSTE EMBALLAGE</text>
+      <text x="640" y="68" fill="#64748b" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700"
+        text-anchor="middle">CONVOYEUR 2 &rarr;</text>
+      <text x="835" y="68" fill="#3b82f6" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700"
+        text-anchor="middle" id="svgTitleQc">CONTRÔLE QUALITÉ</text>
+      <text x="1030" y="68" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700"
+        text-anchor="middle">&darr; BAC REJET</text>
+      <text x="1210" y="68" fill="#10b981" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700"
+        text-anchor="middle">&rarr; STOCK CONFORME</text>
+
+      <!-- ========================================== -->
+      <!-- 3. SUPPORT & PIEDS DU CONVOYEUR            -->
+      <!-- ========================================== -->
+      <rect x="220" y="300" width="12" height="160" fill="#334155" />
+      <rect x="210" y="455" width="32" height="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
+
+      <rect x="360" y="300" width="12" height="160" fill="#334155" />
+      <rect x="350" y="455" width="32" height="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
+
+      <rect x="550" y="300" width="12" height="160" fill="#334155" />
+      <rect x="540" y="455" width="32" height="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
+
+      <rect x="730" y="300" width="12" height="160" fill="#334155" />
+      <rect x="720" y="455" width="32" height="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
+
+      <rect x="910" y="300" width="12" height="160" fill="#334155" />
+      <rect x="900" y="455" width="32" height="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
+
+      <!-- Poutre longitudinale -->
+      <rect x="160" y="295" width="810" height="16" fill="#1e293b" stroke="#475569" stroke-width="2" />
+
+      <!-- ========================================== -->
+      <!-- 4. ROULEAUX ROTATIFS DU CONVOYEUR          -->
+      <!-- ========================================== -->
+      <circle cx="170" cy="275" r="20" fill="#0f172a" stroke="#64748b" stroke-width="3" />
+      <circle cx="170" cy="275" r="6" fill="#38bdf8" />
+      <line id="rollerSpoke1A" x1="152" y1="275" x2="188" y2="275" stroke="#94a3b8" stroke-width="2" />
+      <line id="rollerSpoke1B" x1="170" y1="257" x2="170" y2="293" stroke="#94a3b8" stroke-width="2" />
+
+      <circle cx="260" cy="275" r="16" fill="#1e293b" stroke="#475569" stroke-width="2" />
+      <circle cx="260" cy="275" r="5" fill="#0284c7" />
+      <line id="spoke2A" x1="246" y1="275" x2="274" y2="275" stroke="#64748b" stroke-width="2" />
+      <line id="spoke2B" x1="260" y1="261" x2="260" y2="289" stroke="#64748b" stroke-width="2" />
+
+      <circle cx="350" cy="275" r="16" fill="#1e293b" stroke="#475569" stroke-width="2" />
+      <circle cx="350" cy="275" r="5" fill="#0284c7" />
+      <line id="spoke3A" x1="336" y1="275" x2="364" y2="275" stroke="#64748b" stroke-width="2" />
+      <line id="spoke3B" x1="350" y1="261" x2="350" y2="289" stroke="#64748b" stroke-width="2" />
+
+      <circle cx="440" cy="275" r="16" fill="#1e293b" stroke="#475569" stroke-width="2" />
+      <circle cx="440" cy="275" r="5" fill="#0284c7" />
+      <line id="spoke4A" x1="426" y1="275" x2="454" y2="275" stroke="#64748b" stroke-width="2" />
+      <line id="spoke4B" x1="440" y1="261" x2="440" y2="289" stroke="#64748b" stroke-width="2" />
+
+      <circle cx="530" cy="275" r="16" fill="#1e293b" stroke="#475569" stroke-width="2" />
+      <circle cx="530" cy="275" r="5" fill="#0284c7" />
+      <line id="spoke5A" x1="516" y1="275" x2="544" y2="275" stroke="#64748b" stroke-width="2" />
+      <line id="spoke5B" x1="530" y1="261" x2="530" y2="289" stroke="#64748b" stroke-width="2" />
+
+      <circle cx="620" cy="275" r="16" fill="#1e293b" stroke="#475569" stroke-width="2" />
+      <circle cx="620" cy="275" r="5" fill="#0284c7" />
+      <line id="spoke6A" x1="606" y1="275" x2="634" y2="275" stroke="#64748b" stroke-width="2" />
+      <line id="spoke6B" x1="620" y1="261" x2="620" y2="289" stroke="#64748b" stroke-width="2" />
+
+      <circle cx="710" cy="275" r="16" fill="#1e293b" stroke="#475569" stroke-width="2" />
+      <circle cx="710" cy="275" r="5" fill="#0284c7" />
+      <line id="spoke7A" x1="696" y1="275" x2="724" y2="275" stroke="#64748b" stroke-width="2" />
+      <line id="spoke7B" x1="710" y1="261" x2="710" y2="289" stroke="#64748b" stroke-width="2" />
+
+      <circle cx="800" cy="275" r="16" fill="#1e293b" stroke="#475569" stroke-width="2" />
+      <circle cx="800" cy="275" r="5" fill="#0284c7" />
+      <line id="spoke8A" x1="786" y1="275" x2="814" y2="275" stroke="#64748b" stroke-width="2" />
+      <line id="spoke8B" x1="800" y1="261" x2="800" y2="289" stroke="#64748b" stroke-width="2" />
+
+      <circle cx="890" cy="275" r="16" fill="#1e293b" stroke="#475569" stroke-width="2" />
+      <circle cx="890" cy="275" r="5" fill="#0284c7" />
+      <line id="spoke9A" x1="876" y1="275" x2="904" y2="275" stroke="#64748b" stroke-width="2" />
+      <line id="spoke9B" x1="890" y1="261" x2="890" y2="289" stroke="#64748b" stroke-width="2" />
+
+      <circle cx="960" cy="275" r="20" fill="#0f172a" stroke="#64748b" stroke-width="3" />
+      <circle cx="960" cy="275" r="6" fill="#38bdf8" />
+      <line id="rollerSpokeLastA" x1="942" y1="275" x2="978" y2="275" stroke="#94a3b8" stroke-width="2" />
+      <line id="rollerSpokeLastB" x1="960" y1="257" x2="960" y2="293" stroke="#94a3b8" stroke-width="2" />
+
+      <!-- Bloc moteur -->
+      <rect x="975" y="278" width="36" height="40" fill="#1e293b" stroke="#06b6d4" stroke-width="2" />
+      <circle cx="993" cy="298" r="11" fill="#0f172a" stroke="#334155" stroke-width="2" />
+      <line id="motorSpoke" x1="985" y1="298" x2="1001" y2="298" stroke="#06b6d4" stroke-width="2" />
+
+      <!-- Bande du tapis -->
+      <rect x="160" y="250" width="810" height="12" fill="#090d16" stroke="#475569" stroke-width="1.5" />
+      <rect x="168" y="290" width="794" height="6" fill="#090d16" stroke="#334155" stroke-width="1" />
+      <g id="conveyorBeltTracks"></g>
+      <line x1="150" y1="244" x2="975" y2="244" stroke="#0284c7" stroke-width="3" stroke-linecap="round" />
+
+      <!-- Conteneur des produits -->
+      <g id="productsContainer"></g>
+
+      <!-- ========================================== -->
+      <!-- 5. MACHINE SOURCE (DISTRIBUTEUR 5s)        -->
+      <!-- ========================================== -->
+      <rect x="20" y="100" width="130" height="360" rx="6" fill="#131c2e" stroke="#06b6d4" stroke-width="2" />
+      <rect x="28" y="112" width="114" height="46" fill="#0b0f19" stroke="#273754" stroke-width="1.5" />
+      <text x="85" y="130" fill="#06b6d4" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700"
+        text-anchor="middle">SOURCE BRUTE</text>
+      <text x="85" y="146" fill="#64748b" font-family="'JetBrains Mono', monospace" font-size="9"
+        text-anchor="middle">CADENCE: 5.0s</text>
+      <circle id="sourceLed" cx="126" cy="125" r="5" fill="#ef4444" stroke="#0b0f19" stroke-width="1.5" />
+
+      <rect x="32" y="172" width="106" height="50" fill="#0b0f19" stroke="#334155" stroke-width="1" />
+      <rect x="42" y="182" width="24" height="20" fill="#78350f" stroke="#b45309" stroke-width="1" />
+      <rect x="74" y="182" width="24" height="20" fill="#78350f" stroke="#b45309" stroke-width="1" />
+      <rect x="104" y="182" width="24" height="20" fill="#78350f" stroke="#b45309" stroke-width="1" />
+
+      <rect x="110" y="242" width="45" height="30" fill="#1e293b" stroke="#475569" stroke-width="1.5" />
+      <line x1="110" y1="250" x2="155" y2="250" stroke="#38bdf8" stroke-width="2" />
+      <circle id="pistonHead" cx="120" cy="257" r="5" fill="#06b6d4" />
+
+      <rect x="30" y="290" width="110" height="12" fill="#0b0f19" stroke="#334155" stroke-width="1" />
+      <rect id="machineProgressBar" x="31" y="291" width="0" height="10" fill="#f59e0b" />
+      <text x="85" y="318" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700"
+        text-anchor="middle" id="machineTimerText">PROCHAIN: 5.0s</text>
+
+      <rect x="30" y="460" width="26" height="10" fill="#1e293b" stroke="#475569" stroke-width="1" />
+      <rect x="110" y="460" width="26" height="10" fill="#1e293b" stroke="#475569" stroke-width="1" />
+
+      <!-- ======================================================== -->
+      <!-- 5.B CAPTEUR INDUSTRIEL DE PRÉSENCE AVANT EMBALLAGE      -->
+      <!-- ======================================================== -->
+      <g id="svgSensorPresenceGroup">
+        <!-- Support potence du capteur -->
+        <rect x="342" y="165" width="6" height="52" fill="#334155" stroke="#1e293b" stroke-width="1" />
+        <rect x="333" y="215" width="24" height="20" rx="3" fill="#0f172a" stroke="#0284c7" stroke-width="1.5" />
+
+        <!-- Petit cercle bleu demandé explicitement : Capteur de présence avant emballage -->
+        <circle id="svgSensorPresenceLed" cx="345" cy="225" r="5.5" fill="#1e3a5f" stroke="#0284c7"
+          stroke-width="1.5" />
+
+        <!-- Faisceau optique descendant vers le convoyeur -->
+        <line id="svgSensorPresenceBeam" x1="345" y1="235" x2="345" y2="250" stroke="#38bdf8" stroke-width="2"
+          stroke-dasharray="2,2" opacity="0.3" />
+
+        <!-- Étiquette SVG du capteur -->
+        <rect x="325" y="146" width="40" height="16" rx="3" fill="#0b0f19" stroke="#0284c7" stroke-width="1" />
+        <text x="345" y="158" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="700"
+          text-anchor="middle">SENS-01</text>
+        <text x="345" y="140" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="7" font-weight="700"
+          text-anchor="middle">PRÉSENCE</text>
+      </g>
+
+      <!-- ========================================== -->
+      <!-- 6. POSTE D'EMBALLAGE REPRÉSENTÉ EN SVG     -->
+      <!-- ========================================== -->
+      <rect x="382" y="80" width="10" height="172" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+      <rect x="548" y="80" width="10" height="172" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+
+      <!-- Rectangle fixe pour la machine d'emballage -->
+      <rect id="packMachineFrame" x="382" y="78" width="176" height="128" rx="6" fill="#131c2e" stroke="#06b6d4"
+        stroke-width="2.5" />
+      <rect id="packMachineHeader" x="392" y="86" width="156" height="26" fill="#0b0f19" stroke="#273754"
+        stroke-width="1" />
+      <text id="packHeaderTitle" x="465" y="103" fill="#06b6d4" font-family="'JetBrains Mono', monospace" font-size="11"
+        font-weight="700" text-anchor="middle">POSTE EMBALLAGE</text>
+      <circle id="packLed" cx="536" cy="99" r="4.5" fill="#38bdf8" />
+
+      <!-- Badge SVG Goulot d'étranglement -->
+      <g id="packBottleneckBadge" style="display: none;">
+        <rect x="392" y="60" width="156" height="16" rx="3" fill="#ea580c" stroke="#f97316" stroke-width="1" />
+        <text x="470" y="72" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="700"
+          text-anchor="middle">&warning; GOULOT SATURÉ</text>
+      </g>
+
+      <!-- Statut dynamique "Emballage en cours" -->
+      <rect id="packStatusBg" x="396" y="116" width="148" height="22" fill="#0b0f19" stroke="#334155" stroke-width="1"
+        rx="3" />
+      <text id="packDynamicStatus" x="470" y="131" fill="#94a3b8" font-family="'JetBrains Mono', monospace"
+        font-size="10" font-weight="700" text-anchor="middle">EN ATTENTE</text>
+
+      <rect x="396" y="142" width="148" height="5" fill="#090d16" stroke="#273754" stroke-width="1" rx="2" />
+      <rect id="packProgressBar" x="397" y="143" width="0" height="3" fill="#f59e0b" rx="1" />
+
+      <!-- Compteurs SVG : Attente & Emballés -->
+      <rect x="396" y="151" width="70" height="44" fill="#0b0f19" stroke="#f59e0b" stroke-width="1" rx="3" />
+      <text x="431" y="164" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="700"
+        text-anchor="middle">EN ATTENTE</text>
+      <text id="svgWaitingCount" x="431" y="186" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="16"
+        font-weight="700" text-anchor="middle">0</text>
+
+      <rect x="474" y="151" width="70" height="44" fill="#0b0f19" stroke="#a855f7" stroke-width="1" rx="3" />
+      <text x="509" y="164" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="700"
+        text-anchor="middle">EMBALLÉS</text>
+      <text id="svgPackedCount" x="509" y="186" fill="#a855f7" font-family="'JetBrains Mono', monospace" font-size="16"
+        font-weight="700" text-anchor="middle">0</text>
+
+      <line id="sealerShaft" x1="470" y1="206" x2="470" y2="214" stroke="#64748b" stroke-width="3" />
+      <rect id="sealerHead" x="448" y="212" width="44" height="4" fill="#64748b" rx="1" />
+
+      <!-- ======================================================== -->
+      <!-- 7. POSTE DE CONTRÔLE QUALITÉ EN SVG (RECTANGLE DISTINCT) -->
+      <!-- ======================================================== -->
+      <rect x="742" y="80" width="10" height="172" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+      <rect x="918" y="80" width="10" height="172" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+
+      <!-- ======================================================== -->
+      <!-- BALISE D'ALERTE VISUELLE SVG (CLIGNOTEMENT ROUGE > 30%)  -->
+      <!-- ======================================================== -->
+      <g id="svgDefectAlarmBeacon" style="display: none;">
+        <rect x="827" y="58" width="16" height="20" rx="2" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.5" />
+        <circle id="svgAlarmBeaconBulb" cx="835" cy="58" r="9" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"
+          class="svg-alarm-beacon" />
+        <circle id="svgAlarmBeaconWave" cx="835" cy="58" r="18" fill="none" stroke="#ef4444" stroke-width="2"
+          opacity="0.8" class="svg-alarm-pulse" />
+        <rect x="752" y="36" width="166" height="18" rx="4" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.5" />
+        <text x="835" y="49" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700"
+          text-anchor="middle">&#9888; ALERTE DÉFAUT &gt; 30%</text>
+      </g>
+
+      <rect id="qcMachineFrame" x="742" y="78" width="186" height="128" rx="6" fill="#131c2e" stroke="#3b82f6"
+        stroke-width="2.5" />
+      <rect id="qcMachineHeader" x="752" y="86" width="166" height="26" fill="#0b0f19" stroke="#273754"
+        stroke-width="1" />
+      <text id="qcHeaderTitle" x="825" y="103" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="11"
+        font-weight="700" text-anchor="middle">CONTRÔLE QUALITÉ</text>
+
+      <!-- Indicateur lumineux : Vert = Conforme, Rouge = Rejet -->
+      <circle id="qcLed" cx="902" cy="99" r="6.5" fill="#334155" stroke="#0f172a" stroke-width="2" />
+
+      <!-- Badge SVG Goulot d'étranglement -->
+      <g id="qcBottleneckBadge" style="display: none;">
+        <rect x="752" y="60" width="166" height="16" rx="3" fill="#ea580c" stroke="#f97316" stroke-width="1" />
+        <text x="835" y="72" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="700"
+          text-anchor="middle">&warning; GOULOT SATURÉ</text>
+      </g>
+
+      <rect id="qcStatusBg" x="754" y="116" width="162" height="22" fill="#0b0f19" stroke="#334155" stroke-width="1"
+        rx="3" />
+      <text id="qcStatusText" x="835" y="131" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="10"
+        font-weight="700" text-anchor="middle">PRÊT (DÉFAUT: 20%)</text>
+
+      <rect x="754" y="142" width="162" height="5" fill="#090d16" stroke="#273754" stroke-width="1" rx="2" />
+      <rect id="qcProgressBar" x="755" y="143" width="0" height="3" fill="#3b82f6" rx="1" />
+
+      <!-- Cadrans statistiques SVG QC -->
+      <rect x="752" y="151" width="50" height="44" fill="#0b0f19" stroke="#10b981" stroke-width="1" rx="3" />
+      <text x="777" y="164" fill="#10b981" font-family="'JetBrains Mono', monospace" font-size="7" font-weight="700"
+        text-anchor="middle">CONFORME</text>
+      <text id="svgQcPassedCount" x="777" y="186" fill="#10b981" font-family="'JetBrains Mono', monospace"
+        font-size="15" font-weight="700" text-anchor="middle">0</text>
+
+      <rect x="810" y="151" width="50" height="44" fill="#0b0f19" stroke="#ef4444" stroke-width="1" rx="3" />
+      <text x="835" y="164" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="7" font-weight="700"
+        text-anchor="middle">REJET</text>
+      <text id="svgQcRejectedCount" x="835" y="186" fill="#ef4444" font-family="'JetBrains Mono', monospace"
+        font-size="15" font-weight="700" text-anchor="middle">0</text>
+
+      <rect x="868" y="151" width="50" height="44" fill="#0b0f19" stroke="#f59e0b" stroke-width="1" rx="3" />
+      <text x="893" y="164" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="7" font-weight="700"
+        text-anchor="middle">% DÉFAUT</text>
+      <text id="svgQcDefectRate" x="893" y="186" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="12"
+        font-weight="700" text-anchor="middle">0.0%</text>
+
+      <line id="qcScanBeam" x1="835" y1="206" x2="835" y2="250" stroke="#38bdf8" stroke-width="2" stroke-dasharray="2,2"
+        opacity="0.4" />
+      <polygon id="qcLaserTriangle" points="830,206 840,206 835,212" fill="#38bdf8" />
+
+      <rect id="qcPusherShaft" x="870" y="240" width="8" height="10" fill="#334155" />
+      <rect id="qcPusherArm" x="865" y="238" width="18" height="5" fill="#64748b" />
+
+      <!-- ======================================================== -->
+      <!-- 7.B CAPTEUR INDUSTRIEL DE COMPTAGE APRÈS CONTRÔLE QUALITÉ-->
+      <!-- ======================================================== -->
+      <g id="svgSensorCountGroup">
+        <!-- Support potence du capteur de comptage -->
+        <rect x="944" y="165" width="6" height="52" fill="#334155" stroke="#1e293b" stroke-width="1" />
+        <rect x="935" y="215" width="24" height="20" rx="3" fill="#0f172a" stroke="#10b981" stroke-width="1.5" />
+
+        <!-- Voyant LED de comptage -->
+        <circle id="svgSensorCountLed" cx="947" cy="225" r="5.5" fill="#064e3b" stroke="#10b981" stroke-width="1.5" />
+
+        <!-- Faisceau de détection optique de comptage -->
+        <line id="svgSensorCountBeam" x1="947" y1="235" x2="947" y2="250" stroke="#10b981" stroke-width="2"
+          stroke-dasharray="2,2" opacity="0.3" />
+
+        <!-- Afficheur digital de comptage en SVG -->
+        <rect x="925" y="142" width="44" height="20" rx="3" fill="#090d16" stroke="#10b981" stroke-width="1.5" />
+        <text id="svgSensorCountDisplay" x="947" y="156" fill="#10b981" font-family="'JetBrains Mono', monospace"
+          font-size="11" font-weight="700" text-anchor="middle">0</text>
+        <text x="947" y="136" fill="#10b981" font-family="'JetBrains Mono', monospace" font-size="7" font-weight="700"
+          text-anchor="middle">SENS-02 COMPTEUR</text>
+      </g>
+
+      <!-- ======================================================== -->
+      <!-- 8. BAC DE REJET (ZONE SVG ROUGE) - SI NON CONFORME       -->
+      <!-- ======================================================== -->
+      <line x1="880" y1="250" x2="945" y2="330" stroke="#ef4444" stroke-width="3" stroke-dasharray="3,3"
+        opacity="0.8" />
+      <rect x="940" y="325" width="145" height="125" rx="6" fill="#180b0b" stroke="#ef4444" stroke-width="2.5" />
+
+      <rect x="948" y="333" width="129" height="24" fill="#0b0f19" stroke="#7f1d1d" stroke-width="1" />
+      <text x="1012" y="349" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700"
+        text-anchor="middle">&cross; BAC DE REJET (ROUGE)</text>
+      <circle id="rejectLed" cx="1066" cy="345" r="4.5" fill="#334155" />
+
+      <g id="rejectBinProducts"></g>
+
+      <rect x="955" y="418" width="115" height="22" fill="#090d16" stroke="#ef4444" stroke-width="1" />
+      <text x="965" y="433" fill="#64748b" font-family="'JetBrains Mono', monospace" font-size="9"
+        font-weight="700">REJETS :</text>
+      <text id="svgRejectBinCounter" x="1060" y="434" fill="#ef4444" font-family="'JetBrains Mono', monospace"
+        font-size="13" font-weight="700" text-anchor="end">0</text>
+
+      <!-- ======================================================== -->
+      <!-- 9. STOCK FINAL (ZONE SVG VERTE) - SI CONFORME            -->
+      <!-- ======================================================== -->
+      <line x1="975" y1="250" x2="1120" y2="280" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" />
+      <rect x="1120" y="240" width="165" height="210" rx="6" fill="#0b1712" stroke="#10b981" stroke-width="2.5" />
+
+      <rect x="1130" y="248" width="145" height="28" fill="#0b0f19" stroke="#064e3b" stroke-width="1" />
+      <text x="1202" y="266" fill="#10b981" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700"
+        text-anchor="middle">&check; STOCK FINAL (VERT)</text>
+      <circle id="finalStockLed" cx="1264" cy="262" r="5" fill="#334155" />
+
+      <rect x="1135" y="415" width="135" height="12" fill="#78350f" stroke="#92400e" stroke-width="1" />
+      <rect x="1145" y="427" width="22" height="12" fill="#451a03" />
+      <rect x="1192" y="427" width="22" height="12" fill="#451a03" />
+      <rect x="1238" y="427" width="22" height="12" fill="#451a03" />
+
+      <g id="finalStockProducts"></g>
+
+      <rect x="1142" y="286" width="122" height="24" fill="#090d16" stroke="#10b981" stroke-width="1" />
+      <text x="1152" y="302" fill="#64748b" font-family="'JetBrains Mono', monospace" font-size="9"
+        font-weight="700">CONFORMES :</text>
+      <text id="svgFinalStockCounter" x="1254" y="303" fill="#10b981" font-family="'JetBrains Mono', monospace"
+        font-size="14" font-weight="700" text-anchor="end">0</text>
+
+      <!-- ======================================================== -->
+      <!-- 10. OVERLAY MODAL SVG : MESSAGE RÉUSSITE OU ÉCHEC DÉFI   -->
+      <!-- ======================================================== -->
+      <g id="svgChallengeModal" style="display: none;">
+        <!-- Fond semi-transparent obscurcissant -->
+        <rect x="0" y="0" width="1300" height="500" fill="#0b0f19" opacity="0.88" />
+
+        <!-- Boîte de dialogue du résultat Défi -->
+        <rect id="svgModalBox" x="350" y="110" width="600" height="280" rx="14" fill="#131c2e" stroke="#10b981"
+          stroke-width="3" />
+
+        <!-- Ruban de titre -->
+        <rect id="svgModalHeader" x="350" y="110" width="600" height="60" rx="14" fill="#0b0f19" />
+        <text id="svgModalTitle" x="650" y="150" fill="#10b981" font-family="'Rajdhani', sans-serif" font-size="28"
+          font-weight="700" text-anchor="middle">&#127942; DÉFI RÉUSSI !</text>
+
+        <!-- Messages de détail et bilan -->
+        <text id="svgModalSub" x="650" y="205" fill="#f1f5f9" font-family="'JetBrains Mono', monospace" font-size="14"
+          font-weight="700" text-anchor="middle">100 produits conformes produits en 06:42.5 !</text>
+        <text id="svgModalStats" x="650" y="235" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="12"
+          text-anchor="middle">Total générés : 124 | Rejets : 24 | Taux de défaut : 19.4%</text>
+        <text id="svgModalPerfMsg" x="650" y="260" fill="#f59e0b" font-family="'JetBrains Mono', monospace"
+          font-size="11" text-anchor="middle">Objectif validé en moins de 10 minutes !</text>
+
+        <!-- Bouton SVG interactif pour relancer -->
+        <g id="btnSvgRestartChallenge" cursor="pointer">
+          <rect id="btnSvgRestartBox" x="510" y="295" width="280" height="50" rx="8" fill="#10b981" />
+          <text id="btnSvgRestartText" x="650" y="326" fill="#0b0f19" font-family="'Rajdhani', sans-serif"
+            font-size="16" font-weight="700" text-anchor="middle">REJOUER LE DÉFI &#8635;</text>
+        </g>
+      </g>
+    </svg>
+  </main>
+
+  <!-- TABLEAU DE PERFORMANCE & DÉTECTION DU GOULOT D'ÉTRANGLEMENT -->
+  <section class="performance-section">
+    <div class="performance-header">
+      <span>TABLEAU DE PERFORMANCE DE LA LIGNE &bull; SCADA OEE</span>
+      <span style="font-size: 11px; color: var(--accent-cyan);">ANALYSE STATISTIQUE &amp; FLUX EN TEMPS RÉEL</span>
+    </div>
+
+    <table class="perf-table">
+      <thead>
+        <tr>
+          <th>Indicateur Industriel</th>
+          <th>Valeur Numérique</th>
+          <th>Taux / Pourcentage</th>
+          <th>Diagnostic &amp; Statut de Flux</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Production Totale Générée</strong></td>
+          <td><span id="perfTotalGen" style="color: var(--accent-cyan); font-weight: 700;">0</span> unités</td>
+          <td>100.0 %</td>
+          <td><span class="perf-badge badge-ok">Alimentation continue</span></td>
+        </tr>
+        <tr>
+          <td><strong>Production Conforme (Stock Vert)</strong></td>
+          <td><span id="perfPassed" style="color: var(--accent-green); font-weight: 700;">0</span> / 100 unités</td>
+          <td><span id="perfPassedPct" style="color: var(--accent-green);">0.0 %</span></td>
+          <td><span id="perfChallengeStatus" class="perf-badge badge-ok">Défi en cours</span></td>
+        </tr>
+        <tr>
+          <td><strong>Rejets Non Conformes (Bac Rouge)</strong></td>
+          <td><span id="perfRejected" style="color: var(--accent-red); font-weight: 700;">0</span> unités</td>
+          <td><span id="perfRejectedPct" style="color: var(--accent-red);">0.0 %</span></td>
+          <td><span id="perfRejectStatus" class="perf-badge badge-ok">Tolérance normale</span></td>
+        </tr>
+        <tr>
+          <td><strong>Détection Goulot d'Étranglement</strong></td>
+          <td colspan="2">
+            <span id="perfBottleneckDetail" style="font-size: 12px; color: var(--text-secondary);">Analyse des files
+              d'attente amont...</span>
+          </td>
+          <td>
+            <span id="perfBottleneckBadge" class="perf-badge badge-ok">&check; FLUX FLUIDE / ÉQUILIBRÉ</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Grille de Télémesure (Cartes de stats) -->
+  <section class="telemetry-grid">
+    <div class="stat-card active-stat">
+      <span class="stat-title">Total Généré</span>
+      <span id="statGenerated" class="stat-value">0</span>
+      <span class="stat-sub">Source automatique (5s)</span>
+    </div>
+
+    <div class="stat-card packed-stat">
+      <span class="stat-title">Produits Emballés</span>
+      <span id="statPacked" class="stat-value">0</span>
+      <span class="stat-sub" id="statSubPackDuration">Durée : 3.0s</span>
+    </div>
+
+    <div class="stat-card passed-stat">
+      <span class="stat-title">Stock Conforme</span>
+      <span id="statPassed" class="stat-value">0</span>
+      <span class="stat-sub">Cible Défi : 100</span>
+    </div>
+
+    <div class="stat-card rejected-stat">
+      <span class="stat-title">Rejets Défauts</span>
+      <span id="statRejected" class="stat-value">0</span>
+      <span class="stat-sub">Zone SVG Rouge</span>
+    </div>
+
+    <div class="stat-card rate-stat">
+      <span class="stat-title">Taux Rejet Réel</span>
+      <span id="statDefectRate" class="stat-value">0.0%</span>
+      <span class="stat-sub" id="statSubTargetRate">Cible : 20%</span>
+    </div>
+  </section>
+
+  <!-- Console d'événements de l'atelier -->
+  <footer class="log-panel">
+    <div class="log-header">
+      <span>Journal d'activité automate (SCADA)</span>
+      <span style="font-size: 11px; color: var(--accent-cyan);">CHALLENGE 100 CONFORMES / 10 MIN ACTIF</span>
+    </div>
+    <div id="eventLog" class="log-content">
+      <div class="log-item">
+        <span class="log-time">[00:00:00]</span>
+        <span class="log-msg challenge">Mode Défi prêt : Produire 100 conformes en moins de 10 minutes ! Cliquez sur
+          START ou LANCER LE DÉFI.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Moteur de simulation JavaScript -->
+  <script>
+    (function () {
+      // Configuration dynamique
+      const CONFIG = {
+        spawnIntervalMs: 5000,
+        packingDurationMs: 3000,
+        qcDurationMs: 2000,
+        defectProbability: 0.20,
+
+        // Coordonnées clés
+        conveyorStartX: 160,
+        packStopX: 449,
+        qcStopX: 814,
+        conveyorEndX: 975,
+        conveyorY: 250,
+        productWidth: 42,
+        productHeight: 34,
+        exitCapacityMax: 9,
+
+        // Paramètres du MODE DÉFI
+        targetConforming: 100,        // 100 produits conformes
+        timeLimitMs: 600000           // 10 minutes = 600,000 ms
+      };
+
+      // État global
+      const state = {
+        isRunning: false,
+        speed: 100,
+        timeSinceLastSpawn: 0,
+        products: [],
+
+        // Machine d'emballage
+        packingProduct: null,
+        packTimeElapsed: 0,
+        totalPacked: 0,
+        packQueueCount: 0,
+
+        // Machine QC
+        qcProduct: null,
+        qcTimeElapsed: 0,
+        qcPassedCount: 0,
+        qcRejectedCount: 0,
+        qcQueueCount: 0,
+
+        // Goulot d'étranglement
+        bottleneck: 'none',
+
+        // MODE DÉFI
+        challengeActive: true,
+        challengeCompleted: false,
+        challengeResult: null,        // 'success' | 'failure' | null
+        challengeTimeRemainingMs: CONFIG.timeLimitMs,
+        challengeElapsedMs: 0,
+
+        // Capteurs industriels SVG & mini-dashboard
+        sensorPresenceActive: false,
+        sensorPresenceCount: 0,
+        sensorCountTotal: 0,
+        isDefectAlarmActive: false,
+
+        // Synchronisation du cycle QC et des capteurs en temps simulé
+        qcLastStatus: 'idle',
+        qcResetTimer: 0,
+        sensorCountPulseTimer: 0,
+
+        totalGenerated: 0,
+        beltOffset: 0,
+        rollerAngle: 0
+      };
+
+      // Paramètres du moteur temporel (découplage physique / rendu)
+      const SIM_STEP = 0.02; // Pas de calcul physique fixe : 20 ms (50 Hz)
+      const MAX_CATCHUP_STEPS = 250; // Plafond anti-blocage (max 5 s de calcul par passe)
+      let timeAccumulator = 0;
+      let lastSimTime = performance.now();
+      let renderRafId = null;
+      let simWorker = null;
+      let simIntervalId = null;
+
+      // Éléments du DOM
+      const dom = {
+        clock: document.getElementById('clock'),
+        statusBadge: document.getElementById('statusBadge'),
+        statusText: document.getElementById('statusText'),
+        btnStart: document.getElementById('btnStart'),
+        btnStop: document.getElementById('btnStop'),
+        btnChallengeMode: document.getElementById('btnChallengeMode'),
+        btnReset: document.getElementById('btnReset'),
+        btnManualSpawn: document.getElementById('btnManualSpawn'),
+
+        // Sliders paramètres HTML
+        inputConveyorSpeed: document.getElementById('inputConveyorSpeed'),
+        valConveyorSpeed: document.getElementById('valConveyorSpeed'),
+        inputPackDuration: document.getElementById('inputPackDuration'),
+        valPackDuration: document.getElementById('valPackDuration'),
+        inputQcDuration: document.getElementById('inputQcDuration'),
+        valQcDuration: document.getElementById('valQcDuration'),
+        inputDefectRate: document.getElementById('inputDefectRate'),
+        valDefectRate: document.getElementById('valDefectRate'),
+
+        spawnProgressBar: document.getElementById('spawnProgressBar'),
+        spawnCountdown: document.getElementById('spawnCountdown'),
+        machineProgressBar: document.getElementById('machineProgressBar'),
+        machineTimerText: document.getElementById('machineTimerText'),
+        sourceLed: document.getElementById('sourceLed'),
+        pistonHead: document.getElementById('pistonHead'),
+        conveyorBeltTracks: document.getElementById('conveyorBeltTracks'),
+        productsContainer: document.getElementById('productsContainer'),
+
+        // Éléments SVG du MODE DÉFI
+        svgChallengeFrame: document.getElementById('svgChallengeFrame'),
+        svgChallengeProgressBar: document.getElementById('svgChallengeProgressBar'),
+        svgChallengeProgressText: document.getElementById('svgChallengeProgressText'),
+        svgTimerBox: document.getElementById('svgTimerBox'),
+        svgTimerDot: document.getElementById('svgTimerDot'),
+        svgChallengeTimer: document.getElementById('svgChallengeTimer'),
+        svgBtnResetChallenge: document.getElementById('svgBtnResetChallenge'),
+
+        // Modal de résultat Défi en SVG
+        svgChallengeModal: document.getElementById('svgChallengeModal'),
+        svgModalBox: document.getElementById('svgModalBox'),
+        svgModalHeader: document.getElementById('svgModalHeader'),
+        svgModalTitle: document.getElementById('svgModalTitle'),
+        svgModalSub: document.getElementById('svgModalSub'),
+        svgModalStats: document.getElementById('svgModalStats'),
+        svgModalPerfMsg: document.getElementById('svgModalPerfMsg'),
+        btnSvgRestartChallenge: document.getElementById('btnSvgRestartChallenge'),
+        btnSvgRestartBox: document.getElementById('btnSvgRestartBox'),
+        btnSvgRestartText: document.getElementById('btnSvgRestartText'),
+
+        // Machine Emballage SVG
+        packMachineFrame: document.getElementById('packMachineFrame'),
+        packMachineHeader: document.getElementById('packMachineHeader'),
+        packHeaderTitle: document.getElementById('packHeaderTitle'),
+        packLed: document.getElementById('packLed'),
+        packStatusBg: document.getElementById('packStatusBg'),
+        packDynamicStatus: document.getElementById('packDynamicStatus'),
+        packProgressBar: document.getElementById('packProgressBar'),
+        packBottleneckBadge: document.getElementById('packBottleneckBadge'),
+        svgWaitingCount: document.getElementById('svgWaitingCount'),
+        svgPackedCount: document.getElementById('svgPackedCount'),
+        sealerShaft: document.getElementById('sealerShaft'),
+        sealerHead: document.getElementById('sealerHead'),
+
+        // Machine QC SVG
+        qcMachineFrame: document.getElementById('qcMachineFrame'),
+        qcMachineHeader: document.getElementById('qcMachineHeader'),
+        qcHeaderTitle: document.getElementById('qcHeaderTitle'),
+        qcLed: document.getElementById('qcLed'),
+        qcStatusBg: document.getElementById('qcStatusBg'),
+        qcStatusText: document.getElementById('qcStatusText'),
+        qcProgressBar: document.getElementById('qcProgressBar'),
+        qcBottleneckBadge: document.getElementById('qcBottleneckBadge'),
+        svgQcPassedCount: document.getElementById('svgQcPassedCount'),
+        svgQcRejectedCount: document.getElementById('svgQcRejectedCount'),
+        svgQcDefectRate: document.getElementById('svgQcDefectRate'),
+        qcScanBeam: document.getElementById('qcScanBeam'),
+        qcPusherArm: document.getElementById('qcPusherArm'),
+
+        // Sorties SVG
+        rejectBinProducts: document.getElementById('rejectBinProducts'),
+        svgRejectBinCounter: document.getElementById('svgRejectBinCounter'),
+        rejectLed: document.getElementById('rejectLed'),
+        finalStockProducts: document.getElementById('finalStockProducts'),
+        svgFinalStockCounter: document.getElementById('svgFinalStockCounter'),
+        finalStockLed: document.getElementById('finalStockLed'),
+
+        // Tableau de performance
+        perfTotalGen: document.getElementById('perfTotalGen'),
+        perfPassed: document.getElementById('perfPassed'),
+        perfPassedPct: document.getElementById('perfPassedPct'),
+        perfChallengeStatus: document.getElementById('perfChallengeStatus'),
+        perfRejected: document.getElementById('perfRejected'),
+        perfRejectedPct: document.getElementById('perfRejectedPct'),
+        perfRejectStatus: document.getElementById('perfRejectStatus'),
+        perfBottleneckDetail: document.getElementById('perfBottleneckDetail'),
+        perfBottleneckBadge: document.getElementById('perfBottleneckBadge'),
+
+        // Cartes de télémétrie
+        statGenerated: document.getElementById('statGenerated'),
+        statPacked: document.getElementById('statPacked'),
+        statSubPackDuration: document.getElementById('statSubPackDuration'),
+        statPassed: document.getElementById('statPassed'),
+        statRejected: document.getElementById('statRejected'),
+        statDefectRate: document.getElementById('statDefectRate'),
+        statSubTargetRate: document.getElementById('statSubTargetRate'),
+        eventLog: document.getElementById('eventLog'),
+
+        // Capteurs industriels SVG
+        svgSensorPresenceLed: document.getElementById('svgSensorPresenceLed'),
+        svgSensorPresenceBeam: document.getElementById('svgSensorPresenceBeam'),
+        svgSensorCountLed: document.getElementById('svgSensorCountLed'),
+        svgSensorCountBeam: document.getElementById('svgSensorCountBeam'),
+        svgSensorCountDisplay: document.getElementById('svgSensorCountDisplay'),
+        svgDefectAlarmBeacon: document.getElementById('svgDefectAlarmBeacon'),
+
+        // Mini-Dashboard Temps Réel
+        dashPresenceLed: document.getElementById('dashPresenceLed'),
+        dashPresenceStatus: document.getElementById('dashPresenceStatus'),
+        dashPresenceCount: document.getElementById('dashPresenceCount'),
+        dashPresenceBar: document.getElementById('dashPresenceBar'),
+
+        dashCountLed: document.getElementById('dashCountLed'),
+        dashSensorCountTotal: document.getElementById('dashSensorCountTotal'),
+        dashCountPulseStatus: document.getElementById('dashCountPulseStatus'),
+        dashCountBar: document.getElementById('dashCountBar'),
+
+        cardQualityAlarm: document.getElementById('cardQualityAlarm'),
+        dashAlarmLed: document.getElementById('dashAlarmLed'),
+        dashDefectRateVal: document.getElementById('dashDefectRateVal'),
+        dashAlarmStatusText: document.getElementById('dashAlarmStatusText'),
+        dashAlarmBar: document.getElementById('dashAlarmBar'),
+
+        // Alerte Visuelle Rouge & Cas Test
+        defectAlertBanner: document.getElementById('defectAlertBanner'),
+        alertBannerVal: document.getElementById('alertBannerVal'),
+        btnTestAlarm: document.getElementById('btnTestAlarm'),
+
+        // Rouleaux
+        rollerSpokes: [
+          document.getElementById('rollerSpoke1A'),
+          document.getElementById('rollerSpoke1B'),
+          document.getElementById('spoke2A'),
+          document.getElementById('spoke2B'),
+          document.getElementById('spoke3A'),
+          document.getElementById('spoke3B'),
+          document.getElementById('spoke4A'),
+          document.getElementById('spoke4B'),
+          document.getElementById('spoke5A'),
+          document.getElementById('spoke5B'),
+          document.getElementById('spoke6A'),
+          document.getElementById('spoke6B'),
+          document.getElementById('spoke7A'),
+          document.getElementById('spoke7B'),
+          document.getElementById('spoke8A'),
+          document.getElementById('spoke8B'),
+          document.getElementById('spoke9A'),
+          document.getElementById('spoke9B'),
+          document.getElementById('rollerSpokeLastA'),
+          document.getElementById('rollerSpokeLastB'),
+          document.getElementById('motorSpoke')
+        ]
+      };
+
+      const PACK_PALETTES = [
+        { fill: '#0369a1', border: '#38bdf8', tape: '#bae6fd' },
+        { fill: '#0d9488', border: '#2dd4bf', tape: '#ccfbf1' },
+        { fill: '#6366f1', border: '#a5b4fc', tape: '#e0e7ff' },
+        { fill: '#9333ea', border: '#c084fc', tape: '#f3e8ff' }
+      ];
+
+      function updateClock() {
+        dom.clock.textContent = new Date().toTimeString().split(' ')[0];
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      function logEvent(msg, type = 'status') {
+        const time = new Date().toTimeString().split(' ')[0];
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        item.innerHTML = `<span class="log-time">[${time}]</span><span class="log-msg ${type}">${msg}</span>`;
+        dom.eventLog.prepend(item);
+        if (dom.eventLog.children.length > 30) {
+          dom.eventLog.removeChild(dom.eventLog.lastChild);
+        }
+      }
+
+      // Initialisation des rainures du tapis
+      const TRACK_COUNT = 38;
+      const TRACK_SPACING = 21;
+      const tracks = [];
+
+      function initBeltTracks() {
+        dom.conveyorBeltTracks.innerHTML = '';
+        for (let i = 0; i < TRACK_COUNT; i++) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('y1', '250');
+          line.setAttribute('y2', '262');
+          line.setAttribute('stroke', '#334155');
+          line.setAttribute('stroke-width', '2');
+          dom.conveyorBeltTracks.appendChild(line);
+          tracks.push(line);
+        }
+        updateBeltTracks(0);
+      }
+
+      function updateBeltTracks(offset) {
+        const beltLength = 810;
+        const startX = 160;
+        for (let i = 0; i < TRACK_COUNT; i++) {
+          let x = startX + ((i * TRACK_SPACING + offset) % beltLength);
+          tracks[i].setAttribute('x1', x);
+          tracks[i].setAttribute('x2', x);
+        }
+      }
+
+      function updateRollersRotation(angleDeg) {
+        const rad = (angleDeg * Math.PI) / 180;
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+
+        dom.rollerSpokes[0].setAttribute('x1', 170 - 18 * cos);
+        dom.rollerSpokes[0].setAttribute('y1', 275 - 18 * sin);
+        dom.rollerSpokes[0].setAttribute('x2', 170 + 18 * cos);
+        dom.rollerSpokes[0].setAttribute('y2', 275 + 18 * sin);
+        dom.rollerSpokes[1].setAttribute('x1', 170 - 18 * -sin);
+        dom.rollerSpokes[1].setAttribute('y1', 275 - 18 * cos);
+        dom.rollerSpokes[1].setAttribute('x2', 170 + 18 * -sin);
+        dom.rollerSpokes[1].setAttribute('y2', 275 + 18 * cos);
+
+        const centres = [260, 350, 440, 530, 620, 710, 800, 890];
+        centres.forEach((cx, idx) => {
+          const spokeA = dom.rollerSpokes[2 + idx * 2];
+          const spokeB = dom.rollerSpokes[3 + idx * 2];
+          spokeA.setAttribute('x1', cx - 15 * cos);
+          spokeA.setAttribute('y1', 275 - 15 * sin);
+          spokeA.setAttribute('x2', cx + 15 * cos);
+          spokeA.setAttribute('y2', 275 + 15 * sin);
+
+          spokeB.setAttribute('x1', cx - 15 * -sin);
+          spokeB.setAttribute('y1', 275 - 15 * cos);
+          spokeB.setAttribute('x2', cx + 15 * -sin);
+          spokeB.setAttribute('y2', 275 + 15 * cos);
+        });
+
+        dom.rollerSpokes[18].setAttribute('x1', 960 - 18 * cos);
+        dom.rollerSpokes[18].setAttribute('y1', 275 - 18 * sin);
+        dom.rollerSpokes[18].setAttribute('x2', 960 + 18 * cos);
+        dom.rollerSpokes[18].setAttribute('y2', 275 + 18 * sin);
+        dom.rollerSpokes[19].setAttribute('x1', 960 - 18 * -sin);
+        dom.rollerSpokes[19].setAttribute('y1', 275 - 18 * cos);
+        dom.rollerSpokes[19].setAttribute('x2', 960 + 18 * -sin);
+        dom.rollerSpokes[19].setAttribute('y2', 275 + 18 * cos);
+
+        dom.rollerSpokes[20].setAttribute('x1', 993 - 9 * cos);
+        dom.rollerSpokes[20].setAttribute('y1', 298 - 9 * sin);
+        dom.rollerSpokes[20].setAttribute('x2', 993 + 9 * cos);
+        dom.rollerSpokes[20].setAttribute('y2', 298 + 9 * sin);
+      }
+
+      function createProductElement(product) {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('id', `prod-${product.id}`);
+
+        const box = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        box.setAttribute('class', 'prod-box');
+        box.setAttribute('x', '0');
+        box.setAttribute('y', '0');
+        box.setAttribute('width', CONFIG.productWidth);
+        box.setAttribute('height', CONFIG.productHeight);
+        box.setAttribute('rx', '3');
+        box.setAttribute('fill', '#78350f');
+        box.setAttribute('stroke', '#b45309');
+        box.setAttribute('stroke-width', '2');
+        g.appendChild(box);
+
+        const tape = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        tape.setAttribute('class', 'prod-tape');
+        tape.setAttribute('x1', CONFIG.productWidth / 2);
+        tape.setAttribute('y1', '0');
+        tape.setAttribute('x2', CONFIG.productWidth / 2);
+        tape.setAttribute('y2', CONFIG.productHeight);
+        tape.setAttribute('stroke', '#451a03');
+        tape.setAttribute('stroke-width', '3');
+        tape.setAttribute('opacity', '0.6');
+        g.appendChild(tape);
+
+        const badge = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        badge.setAttribute('class', 'prod-badge');
+        badge.setAttribute('cx', '10');
+        badge.setAttribute('cy', '10');
+        badge.setAttribute('r', '4');
+        badge.setAttribute('fill', '#94a3b8');
+        badge.setAttribute('stroke', '#334155');
+        badge.setAttribute('stroke-width', '1');
+        g.appendChild(badge);
+
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('class', 'prod-label');
+        label.setAttribute('x', CONFIG.productWidth / 2);
+        label.setAttribute('y', '27');
+        label.setAttribute('fill', '#fde68a');
+        label.setAttribute('font-family', "'JetBrains Mono', monospace");
+        label.setAttribute('font-size', '9');
+        label.setAttribute('font-weight', '700');
+        label.setAttribute('text-anchor', 'middle');
+        label.textContent = `B#${String(product.id).padStart(2, '0')}`;
+        g.appendChild(label);
+
+        dom.productsContainer.appendChild(g);
+        return g;
+      }
+
+      function applyPackagingVisual(product) {
+        const g = product.element;
+        if (!g) return;
+
+        const style = PACK_PALETTES[(product.id - 1) % PACK_PALETTES.length];
+        product.style = style;
+
+        const box = g.querySelector('.prod-box');
+        if (box) {
+          box.setAttribute('fill', style.fill);
+          box.setAttribute('stroke', style.border);
+          box.setAttribute('stroke-width', '2.5');
+        }
+
+        const tape = g.querySelector('.prod-tape');
+        if (tape) {
+          tape.setAttribute('stroke', style.tape);
+          tape.setAttribute('stroke-width', '4');
+        }
+
+        const crossTape = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        crossTape.setAttribute('class', 'cross-tape');
+        crossTape.setAttribute('x1', '0');
+        crossTape.setAttribute('y1', CONFIG.productHeight / 2);
+        crossTape.setAttribute('x2', CONFIG.productWidth);
+        crossTape.setAttribute('y2', CONFIG.productHeight / 2);
+        crossTape.setAttribute('stroke', style.tape);
+        crossTape.setAttribute('stroke-width', '2');
+        g.appendChild(crossTape);
+
+        const badge = g.querySelector('.prod-badge');
+        if (badge) {
+          badge.setAttribute('fill', '#38bdf8');
+          badge.setAttribute('stroke', '#ffffff');
+        }
+
+        const label = g.querySelector('.prod-label');
+        if (label) {
+          label.setAttribute('fill', '#ffffff');
+          label.textContent = `P#${String(product.id).padStart(2, '0')}`;
+        }
+      }
+
+      function applyDefectVisual(product) {
+        const g = product.element;
+        if (!g) return;
+
+        const box = g.querySelector('.prod-box');
+        if (box) {
+          box.setAttribute('stroke', '#ef4444');
+          box.setAttribute('stroke-width', '3');
+        }
+
+        const badge = g.querySelector('.prod-badge');
+        if (badge) {
+          badge.setAttribute('fill', '#ef4444');
+        }
+
+        const label = g.querySelector('.prod-label');
+        if (label) {
+          label.setAttribute('fill', '#ef4444');
+          label.textContent = `REJET`;
+        }
+      }
+
+      function spawnProduct() {
+        state.totalGenerated++;
+
+        const newProduct = {
+          id: state.totalGenerated,
+          x: 120,
+          y: CONFIG.conveyorY - CONFIG.productHeight,
+          isPacked: false,
+          isPacking: false,
+          qcChecked: false,
+          isQcTesting: false,
+          isDefective: false,
+          countedBySensor: false,
+          element: null
+        };
+
+        newProduct.element = createProductElement(newProduct);
+        state.products.push(newProduct);
+
+        dom.pistonHead.setAttribute('cx', '145');
+        setTimeout(() => { dom.pistonHead.setAttribute('cx', '120'); }, 180);
+
+        logEvent(`Produit brut #${String(newProduct.id).padStart(2, '0')} injecté sur le convoyeur.`, 'spawn');
+        updateTelemetry();
+      }
+
+      function setPackingMachineActive(isActive, remainingTimeSec = 3.0, progressRatio = 0, isBottleneck = false) {
+        if (isBottleneck) {
+          dom.packMachineFrame.setAttribute('stroke', '#f97316');
+          dom.packMachineFrame.setAttribute('stroke-width', '3.5');
+          dom.packBottleneckBadge.style.display = 'block';
+        } else {
+          dom.packBottleneckBadge.style.display = 'none';
+          dom.packMachineFrame.setAttribute('stroke-width', '2.5');
+        }
+
+        if (isActive) {
+          if (!isBottleneck) dom.packMachineFrame.setAttribute('stroke', '#f59e0b');
+          dom.packMachineFrame.setAttribute('fill', '#1c160a');
+          dom.packMachineHeader.setAttribute('stroke', isBottleneck ? '#f97316' : '#f59e0b');
+          dom.packMachineHeader.setAttribute('fill', '#451a03');
+          dom.packLed.setAttribute('fill', '#f59e0b');
+          dom.packStatusBg.setAttribute('stroke', isBottleneck ? '#f97316' : '#f59e0b');
+
+          dom.packDynamicStatus.textContent = `Emballage en cours (${remainingTimeSec.toFixed(1)}s)`;
+          dom.packDynamicStatus.setAttribute('fill', '#f59e0b');
+
+          dom.sealerShaft.setAttribute('y2', '220');
+          dom.sealerHead.setAttribute('y', '218');
+          dom.sealerHead.setAttribute('fill', '#f59e0b');
+
+          dom.packProgressBar.setAttribute('width', (progressRatio * 146).toFixed(1));
+          dom.packProgressBar.setAttribute('fill', '#f59e0b');
+        } else {
+          if (!isBottleneck) dom.packMachineFrame.setAttribute('stroke', '#06b6d4');
+          dom.packMachineFrame.setAttribute('fill', '#131c2e');
+          dom.packMachineHeader.setAttribute('stroke', '#273754');
+          dom.packMachineHeader.setAttribute('fill', '#0b0f19');
+          dom.packLed.setAttribute('fill', '#38bdf8');
+          dom.packStatusBg.setAttribute('stroke', '#334155');
+
+          dom.packDynamicStatus.textContent = isBottleneck ? 'SATURÉ (EN ATTENTE)' : 'EN ATTENTE';
+          dom.packDynamicStatus.setAttribute('fill', isBottleneck ? '#f97316' : '#94a3b8');
+
+          dom.sealerShaft.setAttribute('y2', '214');
+          dom.sealerHead.setAttribute('y', '212');
+          dom.sealerHead.setAttribute('fill', '#64748b');
+
+          dom.packProgressBar.setAttribute('width', '0');
+        }
+      }
+
+      function setQcMachineState(mode, remainingSec = 2.0, progressRatio = 0, isBottleneck = false) {
+        if (isBottleneck) {
+          dom.qcMachineFrame.setAttribute('stroke', '#f97316');
+          dom.qcMachineFrame.setAttribute('stroke-width', '3.5');
+          dom.qcBottleneckBadge.style.display = 'block';
+        } else {
+          dom.qcBottleneckBadge.style.display = 'none';
+          dom.qcMachineFrame.setAttribute('stroke-width', '2.5');
+        }
+
+        if (mode === 'testing') {
+          if (!isBottleneck) dom.qcMachineFrame.setAttribute('stroke', '#38bdf8');
+          dom.qcLed.setAttribute('fill', '#38bdf8');
+          dom.qcStatusText.textContent = `Scan en cours (${remainingSec.toFixed(1)}s)`;
+          dom.qcStatusText.setAttribute('fill', '#38bdf8');
+          dom.qcProgressBar.setAttribute('width', (progressRatio * 160).toFixed(1));
+          dom.qcScanBeam.setAttribute('opacity', '0.9');
+          dom.qcScanBeam.setAttribute('stroke', '#38bdf8');
+        } else if (mode === 'passed') {
+          if (!isBottleneck) dom.qcMachineFrame.setAttribute('stroke', '#10b981');
+          dom.qcLed.setAttribute('fill', '#10b981');
+          dom.qcStatusText.textContent = 'CONFORME \u2714 \u2192 STOCK VERT';
+          dom.qcStatusText.setAttribute('fill', '#10b981');
+          dom.qcProgressBar.setAttribute('width', '160');
+          dom.qcProgressBar.setAttribute('fill', '#10b981');
+          dom.qcScanBeam.setAttribute('opacity', '0.7');
+          dom.qcScanBeam.setAttribute('stroke', '#10b981');
+        } else if (mode === 'rejected') {
+          if (!isBottleneck) dom.qcMachineFrame.setAttribute('stroke', '#ef4444');
+          dom.qcLed.setAttribute('fill', '#ef4444');
+          dom.qcStatusText.textContent = 'REJET \u2716 \u2193 BAC ROUGE';
+          dom.qcStatusText.setAttribute('fill', '#ef4444');
+          dom.qcProgressBar.setAttribute('width', '160');
+          dom.qcProgressBar.setAttribute('fill', '#ef4444');
+          dom.qcScanBeam.setAttribute('opacity', '0.8');
+          dom.qcScanBeam.setAttribute('stroke', '#ef4444');
+
+          dom.qcPusherArm.setAttribute('x', '855');
+          dom.qcPusherArm.setAttribute('fill', '#ef4444');
+          setTimeout(() => {
+            dom.qcPusherArm.setAttribute('x', '865');
+            dom.qcPusherArm.setAttribute('fill', '#64748b');
+          }, 350);
+        } else {
+          if (!isBottleneck) dom.qcMachineFrame.setAttribute('stroke', '#3b82f6');
+          dom.qcLed.setAttribute('fill', '#334155');
+          const targetPct = (CONFIG.defectProbability * 100).toFixed(0);
+          dom.qcStatusText.textContent = isBottleneck ? 'SATURÉ (EN ATTENTE)' : `PRÊT (DÉFAUT: ${targetPct}%)`;
+          dom.qcStatusText.setAttribute('fill', isBottleneck ? '#f97316' : '#94a3b8');
+          dom.qcProgressBar.setAttribute('width', '0');
+          dom.qcProgressBar.setAttribute('fill', '#3b82f6');
+          dom.qcScanBeam.setAttribute('opacity', '0.2');
+          dom.qcScanBeam.setAttribute('stroke', '#38bdf8');
+        }
+      }
+
+      function deliverToRejectBin(product) {
+        state.qcRejectedCount++;
+
+        dom.rejectLed.setAttribute('fill', '#ef4444');
+        setTimeout(() => { dom.rejectLed.setAttribute('fill', '#334155'); }, 300);
+
+        const count = state.qcRejectedCount;
+        const stackIdx = (count - 1) % CONFIG.exitCapacityMax;
+        const col = stackIdx % 3;
+        const row = Math.floor(stackIdx / 3);
+
+        const stackX = 952 + col * 42;
+        const stackY = 415 - (row + 1) * 24;
+
+        if (stackIdx === 0 && count > 1) {
+          dom.rejectBinProducts.innerHTML = '';
+        }
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const box = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        box.setAttribute('x', stackX);
+        box.setAttribute('y', stackY);
+        box.setAttribute('width', '38');
+        box.setAttribute('height', '22');
+        box.setAttribute('rx', '2');
+        box.setAttribute('fill', '#450a0a');
+        box.setAttribute('stroke', '#ef4444');
+        box.setAttribute('stroke-width', '1.5');
+        g.appendChild(box);
+
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', stackX + 19);
+        txt.setAttribute('y', stackY + 15);
+        txt.setAttribute('fill', '#ef4444');
+        txt.setAttribute('font-family', "'JetBrains Mono', monospace");
+        txt.setAttribute('font-size', '8');
+        txt.setAttribute('font-weight', '700');
+        txt.setAttribute('text-anchor', 'middle');
+        txt.textContent = `REJ#${product.id}`;
+        g.appendChild(txt);
+
+        dom.rejectBinProducts.appendChild(g);
+        dom.svgRejectBinCounter.textContent = count;
+
+        logEvent(`Colis #${product.id} : Défectueux &rarr; Stocké dans le Bac de Rejet Rouge.`, 'reject');
+        updateTelemetry();
+        checkChallengeCompletion();
+      }
+
+      function deliverToFinalStock(product) {
+        state.qcPassedCount++;
+
+        dom.finalStockLed.setAttribute('fill', '#10b981');
+        setTimeout(() => { dom.finalStockLed.setAttribute('fill', '#334155'); }, 300);
+
+        const count = state.qcPassedCount;
+        const stackIdx = (count - 1) % CONFIG.exitCapacityMax;
+        const col = stackIdx % 3;
+        const row = Math.floor(stackIdx / 3);
+
+        const stackX = 1145 + col * 44;
+        const stackY = 415 - (row + 1) * 26;
+
+        if (stackIdx === 0 && count > 1) {
+          dom.finalStockProducts.innerHTML = '';
+        }
+
+        const style = product.style || PACK_PALETTES[0];
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const box = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        box.setAttribute('x', stackX);
+        box.setAttribute('y', stackY);
+        box.setAttribute('width', '40');
+        box.setAttribute('height', '24');
+        box.setAttribute('rx', '2');
+        box.setAttribute('fill', style.fill);
+        box.setAttribute('stroke', '#10b981');
+        box.setAttribute('stroke-width', '1.5');
+        g.appendChild(box);
+
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', stackX + 20);
+        txt.setAttribute('y', stackY + 16);
+        txt.setAttribute('fill', '#ffffff');
+        txt.setAttribute('font-family', "'JetBrains Mono', monospace");
+        txt.setAttribute('font-size', '8');
+        txt.setAttribute('font-weight', '700');
+        txt.setAttribute('text-anchor', 'middle');
+        txt.textContent = `OK#${product.id}`;
+        g.appendChild(txt);
+
+        dom.finalStockProducts.appendChild(g);
+        dom.svgFinalStockCounter.textContent = count;
+
+        logEvent(`Colis #${product.id} : Conforme validé &rarr; Stock Final Vert (+1 Défi).`, 'pass');
+        updateTelemetry();
+        checkChallengeCompletion();
+      }
+
+      // -------------------------------------------------------------
+      // LOGIQUE DU MODE DÉFI (100 CONFORMES EN MOINS DE 10 MINUTES)
+      // -------------------------------------------------------------
+      function formatTimeMs(ms) {
+        const totalSec = Math.max(0, ms / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = Math.floor(totalSec % 60);
+        const tenths = Math.floor((ms % 1000) / 100);
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${tenths}`;
+      }
+
+      function updateChallengeUI() {
+        const passed = state.qcPassedCount;
+        const target = CONFIG.targetConforming;
+        const ratio = Math.min(1, passed / target);
+        const pct = Math.floor(ratio * 100);
+
+        // Barre de progression en SVG (largeur max = 366px)
+        dom.svgChallengeProgressBar.setAttribute('width', (ratio * 366).toFixed(1));
+        dom.svgChallengeProgressText.textContent = `${passed} / ${target} CONFORMES (${pct}%)`;
+
+        // Chronomètre dynamique en SVG
+        const remMs = state.challengeTimeRemainingMs;
+        dom.svgChallengeTimer.textContent = formatTimeMs(remMs);
+
+        // Changement de couleur du chrono SVG selon l'urgence
+        if (remMs <= 60000) { // Dernières 60s : Rouge alerte
+          dom.svgChallengeTimer.setAttribute('fill', '#ef4444');
+          dom.svgTimerBox.setAttribute('stroke', '#ef4444');
+          dom.svgTimerDot.setAttribute('fill', '#ef4444');
+        } else if (remMs <= 180000) { // Moins de 3 min : Orange/Ambre
+          dom.svgChallengeTimer.setAttribute('fill', '#f59e0b');
+          dom.svgTimerBox.setAttribute('stroke', '#f59e0b');
+          dom.svgTimerDot.setAttribute('fill', '#f59e0b');
+        } else { // Temps confortable : Vert
+          dom.svgChallengeTimer.setAttribute('fill', '#10b981');
+          dom.svgTimerBox.setAttribute('stroke', '#10b981');
+          dom.svgTimerDot.setAttribute('fill', '#10b981');
+        }
+
+        // Statut du défi dans le tableau de performance
+        if (state.challengeCompleted) {
+          if (state.challengeResult === 'success') {
+            dom.perfChallengeStatus.className = 'perf-badge badge-ok';
+            dom.perfChallengeStatus.textContent = '\u2714 DÉFI RÉUSSI !';
+          } else {
+            dom.perfChallengeStatus.className = 'perf-badge badge-danger';
+            dom.perfChallengeStatus.textContent = '\u2716 TEMPS ÉCOULÉ';
+          }
+        } else {
+          dom.perfChallengeStatus.className = 'perf-badge badge-ok';
+          dom.perfChallengeStatus.textContent = `En cours (${pct}%)`;
+        }
+      }
+
+      function checkChallengeCompletion() {
+        if (!state.challengeActive || state.challengeCompleted) return;
+
+        // Condition 1 : Réussite (100 produits conformes en moins de 10 min)
+        if (state.qcPassedCount >= CONFIG.targetConforming) {
+          state.challengeCompleted = true;
+          state.challengeResult = 'success';
+          showChallengeModal(true);
+          logEvent(`🏆 VICTOIRE DÉFI : 100 produits conformes atteints en ${formatTimeMs(state.challengeElapsedMs)} !`, 'challenge');
+        }
+        // Condition 2 : Échec (temps écoulé = 0 avant 100 conformes)
+        else if (state.challengeTimeRemainingMs <= 0) {
+          state.challengeCompleted = true;
+          state.challengeResult = 'failure';
+          showChallengeModal(false);
+          logEvent(`❌ DÉFAITE DÉFI : Temps écoulé (10:00) ! Seulement ${state.qcPassedCount}/100 conformes.`, 'challenge');
+        }
+      }
+
+      function showChallengeModal(isSuccess) {
+        dom.svgChallengeModal.style.display = 'block';
+
+        if (isSuccess) {
+          // Message de réussite en SVG
+          dom.svgModalBox.setAttribute('stroke', '#10b981');
+          dom.svgModalHeader.setAttribute('fill', '#064e3b');
+          dom.svgModalTitle.setAttribute('fill', '#10b981');
+          dom.svgModalTitle.textContent = '\uD83C\uDFC6 D\u00C9FI R\u00C9USSI ! VICTOIRE !';
+
+          dom.svgModalSub.textContent = `100 produits conformes produits en ${formatTimeMs(state.challengeElapsedMs)} !`;
+          dom.svgModalSub.setAttribute('fill', '#f1f5f9');
+
+          const defectRate = ((state.qcRejectedCount / (state.qcPassedCount + state.qcRejectedCount)) * 100).toFixed(1);
+          dom.svgModalStats.textContent = `Total g\u00E9n\u00E9r\u00E9s : ${state.totalGenerated} | Rejets : ${state.qcRejectedCount} | Taux de d\u00E9faut : ${defectRate}%`;
+          dom.svgModalPerfMsg.textContent = `F\u00E9licitations ! La ligne a tenu la cadence avec succ\u00E8s.`;
+          dom.svgModalPerfMsg.setAttribute('fill', '#10b981');
+
+          dom.btnSvgRestartBox.setAttribute('fill', '#10b981');
+          dom.btnSvgRestartText.textContent = 'NOUVEAU D\u00C9FI \u21BA';
+        } else {
+          // Message d'échec en SVG
+          dom.svgModalBox.setAttribute('stroke', '#ef4444');
+          dom.svgModalHeader.setAttribute('fill', '#7f1d1d');
+          dom.svgModalTitle.setAttribute('fill', '#ef4444');
+          dom.svgModalTitle.textContent = '\u2716 TEMPS \u00C9COUL\u00C9 ! D\u00C9FI \u00C9CHOU\u00C9';
+
+          dom.svgModalSub.textContent = `Limite de 10:00 atteinte. Seuls ${state.qcPassedCount} / 100 conformes obtenus.`;
+          dom.svgModalSub.setAttribute('fill', '#fca5a5');
+
+          const defectRate = (state.qcPassedCount + state.qcRejectedCount) > 0 ?
+            ((state.qcRejectedCount / (state.qcPassedCount + state.qcRejectedCount)) * 100).toFixed(1) : '0.0';
+          dom.svgModalStats.textContent = `Total g\u00E9n\u00E9r\u00E9s : ${state.totalGenerated} | Rejets : ${state.qcRejectedCount} | Taux de d\u00E9faut : ${defectRate}%`;
+          dom.svgModalPerfMsg.textContent = `Conseil : R\u00E9duisez les temps d'\u00E9tranglement ou acc\u00E9l\u00E9rez le convoyeur !`;
+          dom.svgModalPerfMsg.setAttribute('fill', '#f59e0b');
+
+          dom.btnSvgRestartBox.setAttribute('fill', '#ef4444');
+          dom.btnSvgRestartText.textContent = 'R\u00C9ESSAYER LE D\u00C9FI \u21BA';
+        }
+      }
+
+      function hideChallengeModal() {
+        dom.svgChallengeModal.style.display = 'none';
+      }
+
+      function startChallengeMode() {
+        resetSimulation();
+        hideChallengeModal();
+        state.challengeActive = true;
+        state.challengeCompleted = false;
+        state.challengeResult = null;
+        state.challengeTimeRemainingMs = CONFIG.timeLimitMs;
+        state.challengeElapsedMs = 0;
+        updateChallengeUI();
+        startSimulation();
+        logEvent('🏆 DÉFI LANCÉ : Objectif 100 produits conformes en moins de 10 minutes ! Chrono démarré.', 'challenge');
+      }
+
+      // -------------------------------------------------------------
+      // MISE À JOUR DE LA TÉLÉMÉTRIE & DU TABLEAU
+      // -------------------------------------------------------------
+      function updateTelemetry() {
+        const totalQC = state.qcPassedCount + state.qcRejectedCount;
+        const passedPct = totalQC > 0 ? ((state.qcPassedCount / totalQC) * 100).toFixed(1) : '0.0';
+        const defectRate = totalQC > 0 ? ((state.qcRejectedCount / totalQC) * 100).toFixed(1) : '0.0';
+
+        // 1. Tableau de Performance HTML
+        dom.perfTotalGen.textContent = state.totalGenerated;
+        dom.perfPassed.textContent = state.qcPassedCount;
+        dom.perfPassedPct.textContent = `${passedPct} %`;
+        dom.perfRejected.textContent = state.qcRejectedCount;
+        dom.perfRejectedPct.textContent = `${defectRate} %`;
+
+        const targetPct = (CONFIG.defectProbability * 100).toFixed(0);
+        if (parseFloat(defectRate) > parseFloat(targetPct) + 5) {
+          dom.perfRejectStatus.className = 'perf-badge badge-danger';
+          dom.perfRejectStatus.textContent = 'Supérieur à la cible';
+        } else {
+          dom.perfRejectStatus.className = 'perf-badge badge-ok';
+          dom.perfRejectStatus.textContent = 'Tolérance normale';
+        }
+
+        // 2. Diagnostic Goulot d'Étranglement
+        if (state.bottleneck === 'pack') {
+          dom.perfBottleneckBadge.className = 'perf-badge badge-warning';
+          dom.perfBottleneckBadge.textContent = '\u26A0 SATURATION : POSTE EMBALLAGE';
+          dom.perfBottleneckDetail.textContent = `Poste d'emballage saturé (${state.packQueueCount} colis en attente, durée: ${(CONFIG.packingDurationMs / 1000).toFixed(1)}s)`;
+        } else if (state.bottleneck === 'qc') {
+          dom.perfBottleneckBadge.className = 'perf-badge badge-warning';
+          dom.perfBottleneckBadge.textContent = '\u26A0 SATURATION : CONTRÔLE QUALITÉ';
+          dom.perfBottleneckDetail.textContent = `Poste QC saturé (${state.qcQueueCount} colis en attente, durée: ${(CONFIG.qcDurationMs / 1000).toFixed(1)}s)`;
+        } else {
+          dom.perfBottleneckBadge.className = 'perf-badge badge-ok';
+          dom.perfBottleneckBadge.textContent = '\u2714 FLUX FLUIDE / ÉQUILIBRÉ';
+          dom.perfBottleneckDetail.textContent = 'Aucune accumulation anormale. Le convoyeur absorbe le débit sans goulot.';
+        }
+
+        // 3. Affichage en SVG
+        dom.svgQcPassedCount.textContent = state.qcPassedCount;
+        dom.svgQcRejectedCount.textContent = state.qcRejectedCount;
+        dom.svgQcDefectRate.textContent = `${defectRate}%`;
+        dom.svgPackedCount.textContent = state.totalPacked;
+
+        // 4. Cartes statistiques
+        dom.statGenerated.textContent = state.totalGenerated;
+        dom.statPacked.textContent = state.totalPacked;
+        dom.statPassed.textContent = state.qcPassedCount;
+        dom.statRejected.textContent = state.qcRejectedCount;
+        dom.statDefectRate.textContent = `${defectRate}%`;
+
+        // 5. Mise à jour de la barre et du chrono du défi
+        updateChallengeUI();
+
+        // 6. Supervision Alerte Visuelle (Clignotement Rouge si défaut > 30%)
+        const defectRateNum = parseFloat(defectRate);
+        const isDefectAlarm = (totalQC >= 2 && defectRateNum > 30.0);
+
+        if (isDefectAlarm) {
+          dom.defectAlertBanner.classList.add('active');
+          dom.alertBannerVal.textContent = `${defectRateNum.toFixed(1)}%`;
+          dom.svgDefectAlarmBeacon.style.display = 'block';
+          dom.cardQualityAlarm.classList.add('alert-mode');
+          dom.dashAlarmLed.style.background = '#ef4444';
+          dom.dashAlarmLed.style.boxShadow = '0 0 14px #ef4444';
+          dom.dashAlarmStatusText.textContent = `CRITIQUE (${defectRateNum.toFixed(1)}% > 30%)`;
+          dom.dashAlarmStatusText.style.color = '#ef4444';
+          dom.dashDefectRateVal.textContent = `${defectRateNum.toFixed(1)} %`;
+          dom.dashDefectRateVal.style.color = '#ef4444';
+          dom.dashAlarmBar.style.background = '#ef4444';
+          dom.dashAlarmBar.style.width = '100%';
+
+          if (!state.isDefectAlarmActive) {
+            state.isDefectAlarmActive = true;
+            logEvent(`⚠️ ALERTE QUALITÉ CRITIQUE : Taux de rejet à ${defectRateNum.toFixed(1)}% (seuil max 30%) ! Clignotement rouge actif.`, 'reject');
+          }
+        } else {
+          dom.defectAlertBanner.classList.remove('active');
+          dom.svgDefectAlarmBeacon.style.display = 'none';
+          dom.cardQualityAlarm.classList.remove('alert-mode');
+          dom.dashAlarmLed.style.background = '#334155';
+          dom.dashAlarmLed.style.boxShadow = 'none';
+          dom.dashAlarmStatusText.textContent = `CONFORME (≤ 30%)`;
+          dom.dashAlarmStatusText.style.color = '#10b981';
+          dom.dashDefectRateVal.textContent = `${defectRateNum.toFixed(1)} %`;
+          dom.dashDefectRateVal.style.color = (defectRateNum > 20) ? '#f59e0b' : '#10b981';
+          dom.dashAlarmBar.style.background = '#10b981';
+          dom.dashAlarmBar.style.width = `${Math.min(100, (defectRateNum / 30) * 100).toFixed(0)}%`;
+          state.isDefectAlarmActive = false;
+        }
+      }
+
+      // -------------------------------------------------------------
+      // MOTEUR DE SIMULATION DÉCOUPLÉ & PAS DE TEMPS FIXE
+      // -------------------------------------------------------------
+      function advanceSimulation(now) {
+        if (!state.isRunning) {
+          lastSimTime = now;
+          timeAccumulator = 0;
+          return;
+        }
+
+        if (typeof now !== 'number' || !Number.isFinite(now)) {
+          now = performance.now();
+        }
+
+        let dtReal = (now - lastSimTime) / 1000;
+        lastSimTime = now;
+
+        if (dtReal <= 0 || !Number.isFinite(dtReal)) {
+          return;
+        }
+
+        // Si le navigateur a été suspendu longtemps (mise en veille ou freeze),
+        // on plafonne pour éviter une boucle excessive tout en autorisant un rattrapage substantiel
+        const maxRealAllowed = SIM_STEP * MAX_CATCHUP_STEPS;
+        if (dtReal > maxRealAllowed) {
+          dtReal = maxRealAllowed;
+        }
+
+        timeAccumulator += dtReal;
+
+        let stepsCount = 0;
+        while (timeAccumulator >= SIM_STEP && stepsCount < MAX_CATCHUP_STEPS) {
+          stepSimulation(SIM_STEP);
+          timeAccumulator -= SIM_STEP;
+          stepsCount++;
+        }
+
+        // Si l'accumulateur déborde encore malgré la limite de pas, on le vide pour éviter la saturation
+        if (timeAccumulator > SIM_STEP * 2) {
+          timeAccumulator = 0;
+        }
+      }
+
+      function stepSimulation(dt) {
+        if (!state.isRunning) return;
+
+        const dtMs = dt * 1000;
+
+        // Décompte du chronomètre du Mode Défi
+        if (state.challengeActive && !state.challengeCompleted) {
+          state.challengeTimeRemainingMs = Math.max(0, state.challengeTimeRemainingMs - dtMs);
+          state.challengeElapsedMs += dtMs;
+          checkChallengeCompletion();
+        }
+
+        // Convoyeur & rouleaux
+        state.beltOffset += state.speed * dt;
+        state.rollerAngle = (state.rollerAngle + (state.speed * dt * 360) / (2 * Math.PI * 16)) % 360;
+
+        // Générateur Source (5s)
+        state.timeSinceLastSpawn += dtMs;
+        if (state.timeSinceLastSpawn >= CONFIG.spawnIntervalMs) {
+          spawnProduct();
+          state.timeSinceLastSpawn = Math.max(0, state.timeSinceLastSpawn - CONFIG.spawnIntervalMs);
+        }
+
+        // Goulot d'étranglement
+        const isPackSaturated = (state.packingProduct !== null && state.packQueueCount >= 1) || (CONFIG.packingDurationMs > CONFIG.spawnIntervalMs && state.packQueueCount >= 1);
+        const isQcSaturated = (state.qcProduct !== null && state.qcQueueCount >= 1) || (CONFIG.qcDurationMs > CONFIG.packingDurationMs && state.qcQueueCount >= 1);
+
+        if (isPackSaturated && (!isQcSaturated || state.packQueueCount >= state.qcQueueCount)) {
+          state.bottleneck = 'pack';
+        } else if (isQcSaturated) {
+          state.bottleneck = 'qc';
+        } else {
+          state.bottleneck = 'none';
+        }
+
+        // Cycle Machine d'Emballage
+        if (state.packingProduct) {
+          state.packTimeElapsed += dtMs;
+          if (state.packTimeElapsed >= CONFIG.packingDurationMs) {
+            const p = state.packingProduct;
+            p.isPacked = true;
+            p.isPacking = false;
+            applyPackagingVisual(p);
+
+            state.totalPacked++;
+            logEvent(`Produit #${p.id} : Emballage terminé (${(CONFIG.packingDurationMs / 1000).toFixed(1)}s) &rarr; Dirigé vers QC.`, 'pack');
+
+            state.packingProduct = null;
+            state.packTimeElapsed = 0;
+          }
+        }
+
+        // Temporisateur de réinitialisation visuelle du poste QC
+        if (state.qcResetTimer > 0) {
+          state.qcResetTimer = Math.max(0, state.qcResetTimer - dt);
+        }
+
+        // Temporisateur d'impulsion capteur comptage SENS-02
+        if (state.sensorCountPulseTimer > 0) {
+          state.sensorCountPulseTimer = Math.max(0, state.sensorCountPulseTimer - dt);
+        }
+
+        // Cycle Contrôle Qualité
+        if (state.qcProduct) {
+          state.qcTimeElapsed += dtMs;
+
+          if (state.qcTimeElapsed >= CONFIG.qcDurationMs) {
+            const p = state.qcProduct;
+            p.qcChecked = true;
+            p.isQcTesting = false;
+
+            const isDefect = Math.random() < CONFIG.defectProbability;
+            p.isDefective = isDefect;
+
+            if (isDefect) {
+              applyDefectVisual(p);
+              state.qcLastStatus = 'rejected';
+              state.qcResetTimer = 1.2;
+              logEvent(`Colis #${p.id} : DÉFAUT DÉTECTÉ (${(CONFIG.defectProbability * 100).toFixed(0)}%) &rarr; Bac de Rejet Rouge.`, 'reject');
+            } else {
+              state.qcLastStatus = 'passed';
+              state.qcResetTimer = 1.2;
+              logEvent(`Colis #${p.id} : CONFORME VALIDÉ &rarr; Acheminé vers Stock Final Vert.`, 'pass');
+            }
+
+            state.qcProduct = null;
+            state.qcTimeElapsed = 0;
+          }
+        }
+
+        // Déplacements et files d'attente
+        let packQueue = 0;
+        let qcQueue = 0;
+        let minPackStopX = CONFIG.packStopX;
+        let minQcStopX = CONFIG.qcStopX;
+
+        const remainingProducts = [];
+
+        for (let i = 0; i < state.products.length; i++) {
+          const p = state.products[i];
+
+          if (p.qcChecked && p.isDefective) {
+            if (p.x < 890) {
+              p.x += state.speed * dt;
+            } else {
+              p.x += state.speed * dt * 0.7;
+              p.y += state.speed * dt * 0.9;
+            }
+
+            if (p.y >= 335 || p.x >= 950) {
+              if (p.element && p.element.parentNode) p.element.parentNode.removeChild(p.element);
+              deliverToRejectBin(p);
+            } else {
+              remainingProducts.push(p);
+            }
+          } else if (p.qcChecked && !p.isDefective) {
+            p.x += state.speed * dt;
+
+            // Capteur de comptage après contrôle qualité (SENS-02 à x = 947)
+            if (p.x >= 940 && !p.countedBySensor) {
+              p.countedBySensor = true;
+              state.sensorCountTotal++;
+              state.sensorCountPulseTimer = 0.35;
+              logEvent(`SENS-02 : Pièce conforme #${p.id} comptée par le capteur post-QC.`, 'status');
+            }
+
+            if (p.x >= 1130) {
+              if (p.element && p.element.parentNode) p.element.parentNode.removeChild(p.element);
+              deliverToFinalStock(p);
+            } else {
+              remainingProducts.push(p);
+            }
+          } else if (p.isQcTesting) {
+            p.x = CONFIG.qcStopX;
+            remainingProducts.push(p);
+            minQcStopX = p.x - (CONFIG.productWidth + 10);
+          } else if (p.isPacked && !p.qcChecked) {
+            const targetX = p.x + state.speed * dt;
+            if (targetX >= minQcStopX) {
+              p.x = minQcStopX;
+              if (p.x >= CONFIG.qcStopX && state.qcProduct === null) {
+                p.x = CONFIG.qcStopX;
+                p.isQcTesting = true;
+                state.qcProduct = p;
+                state.qcTimeElapsed = 0;
+                logEvent(`Colis #${p.id} : Arrêt devant Contrôle Qualité (${(CONFIG.qcDurationMs / 1000).toFixed(1)}s).`, 'status');
+                minQcStopX = p.x - (CONFIG.productWidth + 10);
+              } else {
+                qcQueue++;
+                minQcStopX = p.x - (CONFIG.productWidth + 10);
+              }
+            } else {
+              p.x = targetX;
+            }
+            remainingProducts.push(p);
+          } else if (p.isPacking) {
+            p.x = CONFIG.packStopX;
+            remainingProducts.push(p);
+            minPackStopX = p.x - (CONFIG.productWidth + 10);
+          } else {
+            const targetX = p.x + state.speed * dt;
+            if (targetX >= minPackStopX) {
+              p.x = minPackStopX;
+              if (p.x >= CONFIG.packStopX && state.packingProduct === null) {
+                p.x = CONFIG.packStopX;
+                p.isPacking = true;
+                state.packingProduct = p;
+                state.packTimeElapsed = 0;
+                logEvent(`Produit #${p.id} : Arrêt devant Poste Emballage (${(CONFIG.packingDurationMs / 1000).toFixed(1)}s).`, 'pack');
+                minPackStopX = p.x - (CONFIG.productWidth + 10);
+              } else {
+                packQueue++;
+                minPackStopX = p.x - (CONFIG.productWidth + 10);
+              }
+            } else {
+              p.x = targetX;
+            }
+            remainingProducts.push(p);
+          }
+        }
+
+        state.products = remainingProducts;
+        state.packQueueCount = packQueue;
+        state.qcQueueCount = qcQueue;
+
+        // Détection Capteur de Présence Avant Emballage (SENS-01 à x = 345)
+        let presenceActive = false;
+        for (let i = 0; i < state.products.length; i++) {
+          const prod = state.products[i];
+          if (!prod.isPacked && prod.x <= 348 && (prod.x + CONFIG.productWidth) >= 340) {
+            presenceActive = true;
+            break;
+          }
+        }
+
+        if (presenceActive) {
+          if (!state.sensorPresenceActive) {
+            state.sensorPresenceActive = true;
+            state.sensorPresenceCount++;
+          }
+        } else {
+          state.sensorPresenceActive = false;
+        }
+      }
+
+      // -------------------------------------------------------------
+      // RENDU VISUEL DÉCOUPLÉ
+      // -------------------------------------------------------------
+      function renderVisuals() {
+        // Convoyeur & rouleaux
+        updateBeltTracks(state.beltOffset);
+        updateRollersRotation(state.rollerAngle);
+
+        // Indicateur Source
+        const remSourceSec = Math.max(0, (CONFIG.spawnIntervalMs - state.timeSinceLastSpawn) / 1000);
+        const progSource = Math.min(100, (state.timeSinceLastSpawn / CONFIG.spawnIntervalMs) * 100);
+
+        dom.spawnCountdown.textContent = `${remSourceSec.toFixed(1)}s`;
+        dom.spawnProgressBar.style.width = `${progSource}%`;
+        dom.machineProgressBar.setAttribute('width', (progSource * 1.08).toFixed(1));
+        dom.machineTimerText.textContent = `PROCHAIN: ${remSourceSec.toFixed(1)}s`;
+
+        // Machine d'emballage
+        if (state.packingProduct) {
+          const progressRatio = Math.min(1, state.packTimeElapsed / CONFIG.packingDurationMs);
+          const remainingSec = Math.max(0, (CONFIG.packingDurationMs - state.packTimeElapsed) / 1000);
+          setPackingMachineActive(true, remainingSec, progressRatio, state.bottleneck === 'pack');
+        } else {
+          setPackingMachineActive(false, 0, 0, state.bottleneck === 'pack');
+        }
+
+        // Machine de contrôle qualité
+        if (state.qcProduct) {
+          const progressRatio = Math.min(1, state.qcTimeElapsed / CONFIG.qcDurationMs);
+          const remainingSec = Math.max(0, (CONFIG.qcDurationMs - state.qcTimeElapsed) / 1000);
+          setQcMachineState('testing', remainingSec, progressRatio, state.bottleneck === 'qc');
+        } else if (state.qcResetTimer > 0) {
+          setQcMachineState(state.qcLastStatus, 0, 1, state.bottleneck === 'qc');
+        } else {
+          setQcMachineState('idle', 0, 0, state.bottleneck === 'qc');
+        }
+
+        // Position des produits SVG
+        for (let i = 0; i < state.products.length; i++) {
+          const p = state.products[i];
+          if (p.element) {
+            p.element.setAttribute('transform', `translate(${p.x}, ${p.y})`);
+          }
+        }
+
+        // Capteur de Présence SENS-01
+        dom.dashPresenceCount.textContent = state.sensorPresenceCount;
+        if (state.sensorPresenceActive) {
+          dom.svgSensorPresenceLed.setAttribute('fill', '#38bdf8');
+          dom.svgSensorPresenceLed.setAttribute('stroke', '#e0f2fe');
+          dom.svgSensorPresenceBeam.setAttribute('opacity', '0.95');
+          dom.svgSensorPresenceBeam.setAttribute('stroke-width', '2.5');
+
+          dom.dashPresenceLed.className = 'sensor-led-indicator sensor-led-presence active';
+          dom.dashPresenceStatus.textContent = 'DÉTECTION ACTIVE';
+          dom.dashPresenceStatus.style.color = '#38bdf8';
+          dom.dashPresenceBar.style.width = '100%';
+        } else {
+          dom.svgSensorPresenceLed.setAttribute('fill', '#1e3a5f');
+          dom.svgSensorPresenceLed.setAttribute('stroke', '#0284c7');
+          dom.svgSensorPresenceBeam.setAttribute('opacity', '0.3');
+          dom.svgSensorPresenceBeam.setAttribute('stroke-width', '2');
+
+          dom.dashPresenceLed.className = 'sensor-led-indicator sensor-led-presence';
+          dom.dashPresenceStatus.textContent = 'FAISCEAU LIBRE';
+          dom.dashPresenceStatus.style.color = '#64748b';
+          dom.dashPresenceBar.style.width = '0%';
+        }
+
+        // Capteur de Comptage SENS-02
+        dom.svgSensorCountDisplay.textContent = state.sensorCountTotal;
+        dom.dashSensorCountTotal.textContent = state.sensorCountTotal;
+
+        if (state.sensorCountPulseTimer > 0) {
+          dom.svgSensorCountLed.setAttribute('fill', '#34d399');
+          dom.svgSensorCountLed.setAttribute('stroke', '#ffffff');
+          dom.svgSensorCountBeam.setAttribute('opacity', '1');
+          dom.svgSensorCountBeam.setAttribute('stroke-width', '3');
+
+          dom.dashCountLed.className = 'sensor-led-indicator sensor-led-counter pulse';
+          dom.dashCountPulseStatus.textContent = `IMPULSION #${state.sensorCountTotal}`;
+          dom.dashCountPulseStatus.style.color = '#10b981';
+          dom.dashCountBar.style.width = '100%';
+        } else {
+          dom.svgSensorCountLed.setAttribute('fill', '#064e3b');
+          dom.svgSensorCountLed.setAttribute('stroke', '#10b981');
+          dom.svgSensorCountBeam.setAttribute('opacity', '0.3');
+          dom.svgSensorCountBeam.setAttribute('stroke-width', '2');
+
+          dom.dashCountLed.className = 'sensor-led-indicator sensor-led-counter';
+          dom.dashCountPulseStatus.textContent = state.sensorCountTotal > 0 ? 'VEILLE' : 'EN ATTENTE';
+          dom.dashCountPulseStatus.style.color = '#64748b';
+          dom.dashCountBar.style.width = state.sensorCountTotal > 0 ? '30%' : '0%';
+        }
+
+        dom.svgWaitingCount.textContent = state.packQueueCount;
+        updateTelemetry();
+      }
+
+      // Boucle de rendu cadencée par requestAnimationFrame (découplée de la simulation)
+      function renderLoop(timestamp) {
+        if (state.isRunning) {
+          advanceSimulation(timestamp || performance.now());
+        }
+        renderVisuals();
+        renderRafId = requestAnimationFrame(renderLoop);
+      }
+
+      // -------------------------------------------------------------
+      // GESTION DES PARAMÈTRES EN TEMPS RÉEL (INPUTS HTML)
+      // -------------------------------------------------------------
+      dom.inputConveyorSpeed.addEventListener('input', (e) => {
+        if (state.isRunning) {
+          advanceSimulation(performance.now());
+        }
+        const val = parseInt(e.target.value, 10);
+        state.speed = val;
+        dom.valConveyorSpeed.textContent = `${val} px/s`;
+      });
+
+      dom.inputPackDuration.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        CONFIG.packingDurationMs = val * 1000;
+        dom.valPackDuration.textContent = `${val.toFixed(1)} s`;
+        dom.statSubPackDuration.textContent = `Durée : ${val.toFixed(1)}s`;
+        dom.packHeaderTitle.textContent = `POSTE EMBALLAGE (${val.toFixed(1)}s)`;
+      });
+
+      dom.inputQcDuration.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        CONFIG.qcDurationMs = val * 1000;
+        dom.valQcDuration.textContent = `${val.toFixed(1)} s`;
+        dom.qcHeaderTitle.textContent = `CONTRÔLE QUALITÉ (${val.toFixed(1)}s)`;
+      });
+
+      dom.inputDefectRate.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        CONFIG.defectProbability = val / 100;
+        dom.valDefectRate.textContent = `${val} %`;
+        dom.statSubTargetRate.textContent = `Cible : ${val}%`;
+        if (state.qcProduct === null) {
+          dom.qcStatusText.textContent = `PRÊT (DÉFAUT: ${val}%)`;
+        }
+      });
+
+      // -------------------------------------------------------------
+      // COMMANDES START / STOP / RESET / DÉFI
+      // -------------------------------------------------------------
+      function startSimulation() {
+        if (state.isRunning) return;
+        state.isRunning = true;
+        lastSimTime = performance.now();
+        timeAccumulator = 0;
+
+        if (simWorker) {
+          try { simWorker.postMessage('start'); } catch (e) { }
+        }
+
+        dom.btnStart.disabled = true;
+        dom.btnStop.disabled = false;
+
+        dom.statusBadge.classList.add('active');
+        dom.statusText.textContent = 'EN SERVICE';
+        dom.sourceLed.setAttribute('fill', '#10b981');
+
+        logEvent('START : Ligne démarrée. Chronomètre actif.', 'status');
+      }
+
+      function stopSimulation() {
+        if (!state.isRunning) return;
+        advanceSimulation(performance.now());
+        state.isRunning = false;
+        timeAccumulator = 0;
+        lastSimTime = performance.now();
+
+        if (simWorker) {
+          try { simWorker.postMessage('stop'); } catch (e) { }
+        }
+
+        dom.btnStart.disabled = false;
+        dom.btnStop.disabled = true;
+
+        dom.statusBadge.classList.remove('active');
+        dom.statusText.textContent = 'ARRÊTÉ';
+        dom.sourceLed.setAttribute('fill', '#ef4444');
+
+        logEvent('STOP : Ligne et chronomètre en pause.', 'status');
+        renderVisuals();
+      }
+
+      function resetSimulation() {
+        stopSimulation();
+        hideChallengeModal();
+
+        timeAccumulator = 0;
+        lastSimTime = performance.now();
+
+        dom.productsContainer.innerHTML = '';
+        dom.rejectBinProducts.innerHTML = '';
+        dom.finalStockProducts.innerHTML = '';
+
+        state.products = [];
+        state.packingProduct = null;
+        state.packTimeElapsed = 0;
+        state.qcProduct = null;
+        state.qcTimeElapsed = 0;
+        state.qcLastStatus = 'idle';
+        state.qcResetTimer = 0;
+        state.sensorCountPulseTimer = 0;
+
+        state.totalGenerated = 0;
+        state.totalPacked = 0;
+        state.qcPassedCount = 0;
+        state.qcRejectedCount = 0;
+        state.packQueueCount = 0;
+        state.qcQueueCount = 0;
+        state.bottleneck = 'none';
+        state.timeSinceLastSpawn = 0;
+
+        // Reset Capteurs & Alarme
+        state.sensorPresenceActive = false;
+        state.sensorPresenceCount = 0;
+        state.sensorCountTotal = 0;
+        state.isDefectAlarmActive = false;
+
+        dom.svgSensorCountDisplay.textContent = '0';
+        dom.dashSensorCountTotal.textContent = '0';
+        dom.dashPresenceCount.textContent = '0';
+        dom.dashPresenceStatus.textContent = 'FAISCEAU LIBRE';
+        dom.dashPresenceStatus.style.color = '#64748b';
+        dom.dashPresenceBar.style.width = '0%';
+        dom.dashCountBar.style.width = '0%';
+        dom.dashCountPulseStatus.textContent = 'EN ATTENTE';
+        dom.dashCountPulseStatus.style.color = '#64748b';
+
+        dom.defectAlertBanner.classList.remove('active');
+        dom.svgDefectAlarmBeacon.style.display = 'none';
+        dom.cardQualityAlarm.classList.remove('alert-mode');
+        dom.dashAlarmLed.style.background = '#334155';
+        dom.dashAlarmLed.style.boxShadow = 'none';
+        dom.dashAlarmStatusText.textContent = 'CONFORME (≤ 30%)';
+        dom.dashAlarmStatusText.style.color = '#10b981';
+        dom.dashAlarmBar.style.background = '#10b981';
+        dom.dashAlarmBar.style.width = '0%';
+
+        // Reset Défi
+        state.challengeCompleted = false;
+        state.challengeResult = null;
+        state.challengeTimeRemainingMs = CONFIG.timeLimitMs;
+        state.challengeElapsedMs = 0;
+
+        dom.svgWaitingCount.textContent = '0';
+        dom.svgPackedCount.textContent = '0';
+        dom.svgQcPassedCount.textContent = '0';
+        dom.svgQcRejectedCount.textContent = '0';
+        dom.svgQcDefectRate.textContent = '0.0%';
+        dom.svgRejectBinCounter.textContent = '0';
+        dom.svgFinalStockCounter.textContent = '0';
+
+        dom.spawnCountdown.textContent = '5.0s';
+        dom.spawnProgressBar.style.width = '0%';
+        dom.machineProgressBar.setAttribute('width', '0');
+        dom.machineTimerText.textContent = 'PROCHAIN: 5.0s';
+
+        setPackingMachineActive(false, 0, 0, false);
+        setQcMachineState('idle', 0, 0, false);
+        updateTelemetry();
+        renderVisuals();
+
+        logEvent('RESET : Réinitialisation complète. Compteurs et défi remis à zéro.', 'status');
+      }
+
+      // Écouteurs des boutons
+      dom.btnStart.addEventListener('click', startSimulation);
+      dom.btnStop.addEventListener('click', stopSimulation);
+      dom.btnReset.addEventListener('click', resetSimulation);
+      dom.btnChallengeMode.addEventListener('click', startChallengeMode);
+
+      dom.btnManualSpawn.addEventListener('click', () => {
+        spawnProduct();
+      });
+
+      // Bouton CAS DE TEST : Alerte Visuelle Rouge (Taux défaut > 30%)
+      dom.btnTestAlarm.addEventListener('click', () => {
+        CONFIG.defectProbability = 0.50;
+        dom.inputDefectRate.value = 50;
+        dom.valDefectRate.textContent = '50 %';
+        dom.statSubTargetRate.textContent = 'Cible : 50%';
+
+        // Simulation instantanée d'un lot avec 4 rejets et 1 conforme -> Taux = 80.0% (> 30%)
+        state.qcRejectedCount += 4;
+        state.qcPassedCount += 1;
+        state.totalGenerated += 5;
+        state.totalPacked += 5;
+        state.sensorCountTotal += 1;
+        dom.svgRejectBinCounter.textContent = state.qcRejectedCount;
+        dom.svgFinalStockCounter.textContent = state.qcPassedCount;
+        dom.svgSensorCountDisplay.textContent = state.sensorCountTotal;
+
+        updateTelemetry();
+        logEvent('🧪 CAS DE TEST EXÉCUTÉ : Taux de rejet forcé à 80% (> 30%) ! L\'alerte rouge clignotante est enclenchée.', 'reject');
+
+        if (!state.isRunning) {
+          startSimulation();
+        }
+      });
+
+      // Actions SVG interactives pour le Défi
+      dom.svgBtnResetChallenge.addEventListener('click', () => {
+        startChallengeMode();
+      });
+
+      dom.btnSvgRestartChallenge.addEventListener('click', () => {
+        startChallengeMode();
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          if (state.isRunning) stopSimulation();
+          else startSimulation();
+        }
+      });
+      // CONNEXION ET ENVOI DES VRAIES DONNÉES À NODE-RED
+      const connexionNodeRed =
+        new WebSocket("ws://127.0.0.1:1880/simulation");
+
+      function envoyerDonneesNodeRed() {
+        if (state.isRunning) {
+          advanceSimulation(performance.now());
+        }
+
+        // Envoyer uniquement si la connexion est ouverte.
+        if (connexionNodeRed.readyState !== WebSocket.OPEN) {
+          return;
+        }
+
+        const totalSorties =
+          state.qcPassedCount + state.qcRejectedCount;
+
+        const tauxDefaut = totalSorties > 0
+          ? Number(
+            (state.qcRejectedCount / totalSorties * 100).toFixed(1)
+          )
+          : 0;
+
+        const donnees = {
+          en_marche: state.isRunning,
+
+          presence: state.sensorPresenceActive,
+          passages: state.sensorPresenceCount,
+          pieces: state.sensorCountTotal,
+
+          produits_generes: state.totalGenerated,
+          produits_emballes: state.totalPacked,
+          stock_conforme: state.qcPassedCount,
+          rejets: state.qcRejectedCount,
+
+          taux_defaut: tauxDefaut,
+          alerte: totalSorties >= 2 && tauxDefaut > 30,
+
+          attente_emballage: state.packQueueCount,
+          attente_controle: state.qcQueueCount,
+          vitesse_px_s: state.speed
+        };
+
+        connexionNodeRed.send(JSON.stringify(donnees));
+      }
+
+      connexionNodeRed.onopen = () => {
+        console.log("Connexion à Node-RED réussie");
+        envoyerDonneesNodeRed();
+      };
+
+      // Actualiser les données deux fois par seconde.
+      setInterval(envoyerDonneesNodeRed, 500);
+
+      connexionNodeRed.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+
+          if (message.commande === "start") {
+            startSimulation();
+          }
+
+          else if (message.commande === "stop") {
+            stopSimulation();
+          }
+
+          else if (message.commande === "reset") {
+            resetSimulation();
+          }
+
+          else if (message.commande === "vitesse") {
+            const valeur = Number(message.valeur);
+
+            if (!Number.isFinite(valeur)) return;
+
+            // Respecter les limites et le pas du slider HTML.
+            const vitesse = Math.min(
+              250,
+              Math.max(30, Math.round(valeur / 5) * 5)
+            );
+
+            // Mettre à jour le slider et déclencher son code existant.
+            dom.inputConveyorSpeed.value = vitesse;
+            dom.inputConveyorSpeed.dispatchEvent(
+              new Event("input", { bubbles: true })
+            );
+          }
+
+          // Renvoyer immédiatement l'état après la commande.
+          envoyerDonneesNodeRed();
+
+        } catch (erreur) {
+          console.error("Commande Node-RED invalide :", erreur);
+        }
+      };
+
+      connexionNodeRed.onerror = () => {
+        console.error("Vérifie que Node-RED est lancé.");
+      };
+
+      connexionNodeRed.onclose = () => {
+        console.log("Connexion fermée : actualise la page pour reconnecter.");
+      };
+
+      // -------------------------------------------------------------
+      // MOTEUR D'ARRIÈRE-PLAN & CYCLE DE VIE
+      // -------------------------------------------------------------
+      // Worker Web inline pour continuer à émettre des ticks même si Chrome bride les timers
+      try {
+        const workerBlob = new Blob([
+          `let intervalId = null;
+           self.onmessage = function(e) {
+             if (e.data === 'start') {
+               if (!intervalId) intervalId = setInterval(function() { self.postMessage('tick'); }, 25);
+             } else if (e.data === 'stop') {
+               if (intervalId) { clearInterval(intervalId); intervalId = null; }
+             }
+           };`
+        ], { type: 'application/javascript' });
+        const workerUrl = URL.createObjectURL(workerBlob);
+        simWorker = new Worker(workerUrl);
+        simWorker.onmessage = function (e) {
+          if (e.data === 'tick' && state.isRunning) {
+            advanceSimulation(performance.now());
+          }
+        };
+      } catch (err) {
+        // En cas de restriction de sécurité (file:/// bloquant les workers en blob)
+        simWorker = null;
+      }
+
+      // Intervalle régulier de surveillance sur le thread principal (tique à 25 ms)
+      simIntervalId = setInterval(function () {
+        if (state.isRunning) {
+          advanceSimulation(performance.now());
+        }
+      }, 25);
+
+      // Reprise instantanée et rafraîchissement visuel dès que la page redevient visible
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          if (state.isRunning) {
+            advanceSimulation(performance.now());
+          }
+          renderVisuals();
+        }
+      });
+
+      // Lancement
+      initBeltTracks();
+      updateChallengeUI();
+      renderVisuals();
+      renderRafId = requestAnimationFrame(renderLoop);
+    })();
+  </script>
+
+</body>
+
+</html>
